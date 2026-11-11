@@ -123,18 +123,18 @@ body {
   padding: 0 32px 28px 32px;
 }
 
-/* Circular Overlapping Profile Photograph */
+/* Circular Overlapping Profile Photograph (190px Desktop, 148px Tablet, 124px Mobile) */
 .cv-photo-wrapper {
   position: relative;
   z-index: 3;
-  width: 156px;
-  height: 156px;
-  margin-top: -92px;
-  margin-bottom: 14px;
+  width: 190px;
+  height: 190px;
+  margin-top: -100px;
+  margin-bottom: 16px;
   border-radius: 50%;
-  border: 4px solid #FFFFFF;
+  border: 5px solid #FFFFFF;
   background-color: #FFFFFF;
-  box-shadow: 0 4px 14px rgba(18, 52, 90, 0.16);
+  box-shadow: 0 6px 18px rgba(18, 52, 90, 0.18);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -151,17 +151,27 @@ body {
   object-fit: cover;
 }
 
+@media (min-width: 601px) and (max-width: 960px) {
+  .cv-photo-wrapper {
+    width: 148px;
+    height: 148px;
+    margin-top: -68px;
+    margin-bottom: 14px;
+    border-width: 4px;
+  }
+}
+
 @media (max-width: 600px) {
   .linkedin-hero-body {
     padding: 0 16px 22px 16px;
   }
 
   .cv-photo-wrapper {
-    width: 88px;
-    height: 88px;
-    margin-top: -28px;
-    margin-bottom: 10px;
-    border-width: 3px;
+    width: 124px;
+    height: 124px;
+    margin-top: -36px;
+    margin-bottom: 12px;
+    border-width: 4px;
   }
 }
 
