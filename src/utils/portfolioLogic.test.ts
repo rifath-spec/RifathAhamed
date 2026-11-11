@@ -1,8 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  isOwnerEditMode,
+  extractGoogleDriveFileId,
   isValidImageUrl,
+  isValidDocumentUrl,
   normalizeImageUrl,
+  normalizeDocumentUrl,
   resolveProjectScreenshots,
   getPublishedCertificates,
   isRestrictedAcademicDocument,
@@ -10,7 +14,19 @@ import {
   POPUP_AUTO_CLOSE_MS,
 } from './portfolioLogic';
 
-test('normalizeImageUrl converts Google Drive share URLs to direct image links and preserves local paths', () => {
+test('isOwnerEditMode returns false for public URLs and true only when ?edit=true is present', () => {
+  assert.equal(isOwnerEditMode(''), false);
+  assert.equal(isOwnerEditMode('?ref=linkedin'), false);
+  assert.equal(isOwnerEditMode('?edit=false'), false);
+  assert.equal(isOwnerEditMode('?edit=true'), true);
+  assert.equal(isOwnerEditMode('?utm_source=cv&edit=true'), true);
+});
+
+test('normalizeImageUrl and extractGoogleDriveFileId convert Google Drive share URLs to direct image links', () => {
+  assert.equal(
+    extractGoogleDriveFileId('https://drive.google.com/file/d/1AbCdEfGhIjKlMnOpQrStUvWxYz/view?usp=sharing'),
+    '1AbCdEfGhIjKlMnOpQrStUvWxYz'
+  );
   assert.equal(
     normalizeImageUrl('/assets/aistudio/Untitled_9d626b95.png'),
     '/assets/aistudio/Untitled_9d626b95.png'
@@ -25,7 +41,18 @@ test('normalizeImageUrl converts Google Drive share URLs to direct image links a
   );
 });
 
-test('isValidImageUrl accepts valid HTTPS and relative asset paths and rejects empty or insecure URLs', () => {
+test('normalizeDocumentUrl converts Google Drive share URLs to direct download links and preserves PDF paths', () => {
+  assert.equal(normalizeDocumentUrl('/assets/resume.pdf'), '/assets/resume.pdf');
+  assert.equal(
+    normalizeDocumentUrl('https://drive.google.com/file/d/1DocFileId999/view?usp=sharing'),
+    'https://drive.google.com/uc?export=download&id=1DocFileId999'
+  );
+  assert.equal(isValidDocumentUrl('/assets/resume.pdf'), true);
+  assert.equal(isValidDocumentUrl('https://drive.google.com/file/d/1DocFileId999/view'), true);
+  assert.equal(isValidDocumentUrl('javascript:alert(1)'), false);
+});
+
+test('isValidImageUrl accepts valid HTTPS, base64 data images, and relative asset paths and rejects empty or insecure URLs', () => {
   assert.equal(isValidImageUrl(''), false);
   assert.equal(isValidImageUrl('   '), false);
   assert.equal(isValidImageUrl(null), false);
@@ -34,6 +61,7 @@ test('isValidImageUrl accepts valid HTTPS and relative asset paths and rejects e
   assert.equal(isValidImageUrl('https://example.com/profile.jpg'), true);
   assert.equal(isValidImageUrl('assets/profile.jpg'), true);
   assert.equal(isValidImageUrl('/assets/certificates/aat.png'), true);
+  assert.equal(isValidImageUrl('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA'), true);
 });
 
 test('resolveProjectScreenshots handles empty strings, single URLs, and multiple screenshot arrays', () => {

@@ -10,6 +10,7 @@ export interface CertificateImageEntry {
 export type ProjectImageValue = string | string[];
 
 export interface PortfolioImagesConfig {
+  cvDocument?: string;
   cover?: string;
   profile: string;
   projects: {
@@ -21,15 +22,66 @@ export interface PortfolioImagesConfig {
 }
 
 export const POPUP_AUTO_CLOSE_MS = 4000;
-export const RESUME_PDF_PATH = 'assets/resume.pdf';
+export const RESUME_PDF_PATH = '/assets/resume.pdf';
 
 /**
- * Validates whether an image URL string is a non-empty, safe HTTPS or relative path.
+ * Checks whether the current URL query string unlocks the owner-only Files & Links manager (?edit=true).
+ */
+export function isOwnerEditMode(searchString: string): boolean {
+  if (typeof searchString !== 'string' || !searchString.trim()) return false;
+  try {
+    const normalized = searchString.startsWith('?') ? searchString : `?${searchString}`;
+    const params = new URLSearchParams(normalized);
+    return params.get('edit') === 'true';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Extracts a Google Drive file ID from common sharing URL formats:
+ * - https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+ * - https://drive.google.com/open?id=FILE_ID
+ * - https://drive.google.com/uc?id=FILE_ID&export=download
+ * - https://drive.google.com/thumbnail?id=FILE_ID
+ */
+export function extractGoogleDriveFileId(url: string): string | null {
+  if (typeof url !== 'string') return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+
+  const driveFileMatch = trimmed.match(
+    /^https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)(?:\/.*)?$/
+  );
+  if (driveFileMatch && driveFileMatch[1]) {
+    return driveFileMatch[1];
+  }
+
+  if (trimmed.startsWith('https://drive.google.com/')) {
+    try {
+      const parsed = new URL(trimmed);
+      const idParam = parsed.searchParams.get('id');
+      if (idParam && /^[a-zA-Z0-9_-]+$/.test(idParam)) {
+        return idParam;
+      }
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Validates whether an image URL string is a non-empty, safe HTTPS, data:image/*, or relative path.
  */
 export function isValidImageUrl(url: unknown): url is string {
   if (typeof url !== 'string') return false;
   const trimmed = url.trim();
   if (!trimmed) return false;
+  if (trimmed.startsWith('data:image/')) {
+    return /^data:image\/(png|jpeg|jpg|webp|gif|svg\+xml);base64,[a-zA-Z0-9+/=]+$/i.test(trimmed);
+  }
   if (trimmed.startsWith('https://')) {
     try {
       const parsed = new URL(trimmed);
@@ -38,7 +90,7 @@ export function isValidImageUrl(url: unknown): url is string {
       return false;
     }
   }
-  if (trimmed.startsWith('http://') || trimmed.startsWith('javascript:') || trimmed.startsWith('data:text')) {
+  if (trimmed.startsWith('http://') || trimmed.startsWith('javascript:') || trimmed.startsWith('data:')) {
     return false;
   }
   // Allow clean local relative asset paths (e.g., "assets/profile.jpg" or "/assets/profile.jpg")
@@ -46,31 +98,56 @@ export function isValidImageUrl(url: unknown): url is string {
 }
 
 /**
- * Converts Google Drive sharing links (e.g. https://drive.google.com/file/d/FILE_ID/view?usp=sharing
- * or https://drive.google.com/open?id=FILE_ID) into direct embeddable image URLs, while returning
+ * Validates whether a document URL (PDF/credential link) is a safe HTTPS URL, data:application/pdf, or relative asset path.
+ */
+export function isValidDocumentUrl(url: unknown): url is string {
+  if (typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  if (!trimmed) return false;
+  if (trimmed.startsWith('data:application/pdf;base64,')) {
+    return true;
+  }
+  if (trimmed.startsWith('https://')) {
+    try {
+      const parsed = new URL(trimmed);
+      return parsed.protocol === 'https:' && Boolean(parsed.hostname);
+    } catch {
+      return false;
+    }
+  }
+  if (trimmed.startsWith('http://') || trimmed.startsWith('javascript:') || trimmed.startsWith('data:')) {
+    return false;
+  }
+  return /^[a-zA-Z0-9_./-]+(\?[a-zA-Z0-9_=&-]+)?$/.test(trimmed);
+}
+
+/**
+ * Converts Google Drive sharing links into direct embeddable image URLs, while returning
  * all other valid URLs trimmed as-is.
  */
 export function normalizeImageUrl(url: string): string {
   const trimmed = url.trim();
   if (!trimmed) return '';
 
-  const driveFileMatch = trimmed.match(
-    /^https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)(?:\/.*)?$/
-  );
-  if (driveFileMatch && driveFileMatch[1]) {
-    return `https://lh3.googleusercontent.com/d/${driveFileMatch[1]}`;
+  const driveId = extractGoogleDriveFileId(trimmed);
+  if (driveId) {
+    return `https://lh3.googleusercontent.com/d/${driveId}`;
   }
 
-  if (trimmed.startsWith('https://drive.google.com/')) {
-    try {
-      const parsed = new URL(trimmed);
-      const idParam = parsed.searchParams.get('id');
-      if (idParam && /^[a-zA-Z0-9_-]+$/.test(idParam)) {
-        return `https://lh3.googleusercontent.com/d/${idParam}`;
-      }
-    } catch {
-      // fall through
-    }
+  return trimmed;
+}
+
+/**
+ * Converts Google Drive file sharing links into direct download links for PDF/documents,
+ * while preserving local paths and standard HTTPS URLs.
+ */
+export function normalizeDocumentUrl(url: string): string {
+  const trimmed = url.trim();
+  if (!trimmed) return RESUME_PDF_PATH;
+
+  const driveId = extractGoogleDriveFileId(trimmed);
+  if (driveId) {
+    return `https://drive.google.com/uc?export=download&id=${driveId}`;
   }
 
   return trimmed;
@@ -128,11 +205,10 @@ export function getPublishedCertificates(
       title: entry.title.trim(),
       issuer: typeof entry.issuer === 'string' ? entry.issuer.trim() : '',
       date: typeof entry.date === 'string' ? entry.date.trim() : '',
-      imageUrl: isValidImageUrl(entry.imageUrl) ? entry.imageUrl.trim() : '',
-      verificationUrl:
-        typeof entry.verificationUrl === 'string' && entry.verificationUrl.trim().startsWith('https://')
-          ? entry.verificationUrl.trim()
-          : '',
+      imageUrl: isValidImageUrl(entry.imageUrl) ? normalizeImageUrl(entry.imageUrl) : '',
+      verificationUrl: isValidDocumentUrl(entry.verificationUrl)
+        ? entry.verificationUrl!.trim()
+        : '',
       watermark: entry.watermark !== false,
     }));
 }

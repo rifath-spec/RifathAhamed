@@ -1,23 +1,73 @@
 /**
  * STANDALONE VANILLA JAVASCRIPT CONTROLLER — RIFATH AHAMED PORTFOLIO
  * ==================================================================
- * Connects portfolioImages (from images.js) to the semantic HTML5 DOM,
- * hydrates the LinkedIn-style cover banner and overlapping circular profile photo,
- * enforces image protection, handles Download CV (assets/resume.pdf),
- * drives the animated SVG handshake thank-you popup, and triggers A4 Print.
+ * Connects portfolioImages (from images.js + localStorage overrides) to the semantic HTML5 DOM,
+ * hydrates the LinkedIn-style cover banner, circular profile photo, project screenshots,
+ * certificates gallery, and CV PDF download link, and powers the owner-only (?edit=true)
+ * "Files & Links" Upload & Link Manager Modal.
  */
 
 (function () {
   var POPUP_AUTO_CLOSE_MS = 4000;
-  var RESUME_PDF_PATH = "assets/resume.pdf";
+  var DEFAULT_RESUME_PDF_PATH = "/assets/resume.pdf";
+  var STORAGE_KEY = "rifath_portfolio_media_v1";
   var popupTimer = null;
   var isPopupOpen = false;
   var lastTriggerElement = null;
+  var initialFallbacks = {
+    cover: "",
+    profile: "",
+    projects: {},
+  };
+
+  function isOwnerEditMode(searchString) {
+    if (typeof searchString !== "string" || !searchString.trim()) return false;
+    try {
+      var normalized =
+        searchString.charAt(0) === "?" ? searchString : "?" + searchString;
+      var params = new URLSearchParams(normalized);
+      return params.get("edit") === "true";
+    } catch (_err) {
+      return false;
+    }
+  }
+
+  function extractGoogleDriveFileId(url) {
+    if (typeof url !== "string") return null;
+    var trimmed = url.trim();
+    if (!trimmed) return null;
+
+    var driveFileMatch = trimmed.match(
+      /^https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)(?:\/.*)?$/
+    );
+    if (driveFileMatch && driveFileMatch[1]) {
+      return driveFileMatch[1];
+    }
+
+    if (trimmed.indexOf("https://drive.google.com/") === 0) {
+      try {
+        var parsed = new URL(trimmed);
+        var idParam = parsed.searchParams.get("id");
+        if (idParam && /^[a-zA-Z0-9_-]+$/.test(idParam)) {
+          return idParam;
+        }
+      } catch (_err) {
+        return null;
+      }
+    }
+
+    return null;
+  }
 
   function isValidImageUrl(url) {
     if (typeof url !== "string") return false;
     var trimmed = url.trim();
     if (!trimmed) return false;
+    if (trimmed.indexOf("data:image/") === 0) {
+      return /^data:image\/(png|jpeg|jpg|webp|gif|svg\+xml);base64,[a-zA-Z0-9+/=]+$/i.test(
+        trimmed
+      );
+    }
     if (trimmed.indexOf("https://") === 0) {
       try {
         var parsed = new URL(trimmed);
@@ -29,7 +79,32 @@
     if (
       trimmed.indexOf("http://") === 0 ||
       trimmed.indexOf("javascript:") === 0 ||
-      trimmed.indexOf("data:text") === 0
+      trimmed.indexOf("data:") === 0
+    ) {
+      return false;
+    }
+    return /^[a-zA-Z0-9_./-]+(\?[a-zA-Z0-9_=&-]+)?$/.test(trimmed);
+  }
+
+  function isValidDocumentUrl(url) {
+    if (typeof url !== "string") return false;
+    var trimmed = url.trim();
+    if (!trimmed) return false;
+    if (trimmed.indexOf("data:application/pdf;base64,") === 0) {
+      return true;
+    }
+    if (trimmed.indexOf("https://") === 0) {
+      try {
+        var parsed = new URL(trimmed);
+        return parsed.protocol === "https:" && Boolean(parsed.hostname);
+      } catch (_err) {
+        return false;
+      }
+    }
+    if (
+      trimmed.indexOf("http://") === 0 ||
+      trimmed.indexOf("javascript:") === 0 ||
+      trimmed.indexOf("data:") === 0
     ) {
       return false;
     }
@@ -52,23 +127,21 @@
     var trimmed = url.trim();
     if (!trimmed) return "";
 
-    var driveFileMatch = trimmed.match(
-      /^https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)(?:\/.*)?$/
-    );
-    if (driveFileMatch && driveFileMatch[1]) {
-      return "https://lh3.googleusercontent.com/d/" + driveFileMatch[1];
+    var driveId = extractGoogleDriveFileId(trimmed);
+    if (driveId) {
+      return "https://lh3.googleusercontent.com/d/" + driveId;
     }
 
-    if (trimmed.indexOf("https://drive.google.com/") === 0) {
-      try {
-        var parsed = new URL(trimmed);
-        var idParam = parsed.searchParams.get("id");
-        if (idParam && /^[a-zA-Z0-9_-]+$/.test(idParam)) {
-          return "https://lh3.googleusercontent.com/d/" + idParam;
-        }
-      } catch (_err) {
-        // fall through
-      }
+    return trimmed;
+  }
+
+  function normalizeDocumentUrl(url) {
+    if (typeof url !== "string" || !url.trim()) return DEFAULT_RESUME_PDF_PATH;
+    var trimmed = url.trim();
+
+    var driveId = extractGoogleDriveFileId(trimmed);
+    if (driveId) {
+      return "https://drive.google.com/uc?export=download&id=" + driveId;
     }
 
     return trimmed;
@@ -85,6 +158,63 @@
       });
     }
     return [];
+  }
+
+  function getActiveConfig() {
+    var base = window.portfolioImages || {
+      cvDocument: DEFAULT_RESUME_PDF_PATH,
+      cover: "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
+      profile: "/assets/aistudio/Untitled_9d626b95.png",
+      projects: { schoolManagement: "", homeRenovation: "" },
+      certificates: [],
+    };
+    try {
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        var saved = JSON.parse(raw);
+        return {
+          cvDocument:
+            typeof saved.cvDocument === "string" && saved.cvDocument.trim()
+              ? saved.cvDocument
+              : base.cvDocument || DEFAULT_RESUME_PDF_PATH,
+          cover:
+            typeof saved.cover === "string" && saved.cover.trim()
+              ? saved.cover
+              : base.cover || "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
+          profile:
+            typeof saved.profile === "string" && saved.profile.trim()
+              ? saved.profile
+              : base.profile || "/assets/aistudio/Untitled_9d626b95.png",
+          projects: {
+            schoolManagement:
+              saved.projects && typeof saved.projects.schoolManagement === "string"
+                ? saved.projects.schoolManagement
+                : (base.projects && base.projects.schoolManagement) || "",
+            homeRenovation:
+              saved.projects && typeof saved.projects.homeRenovation === "string"
+                ? saved.projects.homeRenovation
+                : (base.projects && base.projects.homeRenovation) || "",
+          },
+          certificates: Array.isArray(saved.certificates)
+            ? saved.certificates
+            : Array.isArray(base.certificates)
+            ? base.certificates
+            : [],
+        };
+      }
+    } catch (_err) {
+      // ignore storage errors
+    }
+    return {
+      cvDocument: base.cvDocument || DEFAULT_RESUME_PDF_PATH,
+      cover: base.cover || "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
+      profile: base.profile || "/assets/aistudio/Untitled_9d626b95.png",
+      projects: {
+        schoolManagement: (base.projects && base.projects.schoolManagement) || "",
+        homeRenovation: (base.projects && base.projects.homeRenovation) || "",
+      },
+      certificates: Array.isArray(base.certificates) ? base.certificates : [],
+    };
   }
 
   function preventContextAndDrag(e) {
@@ -108,9 +238,20 @@
     img.addEventListener("contextmenu", preventContextAndDrag);
     img.addEventListener("dragstart", preventContextAndDrag);
 
-    if (typeof options.onError === "function") {
-      img.addEventListener("error", options.onError);
-    }
+    var triedDriveThumbnailFallback = false;
+    img.addEventListener("error", function () {
+      var ghMatch =
+        typeof img.src === "string" &&
+        img.src.match(/^https:\/\/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)$/);
+      if (ghMatch && ghMatch[1] && !triedDriveThumbnailFallback) {
+        triedDriveThumbnailFallback = true;
+        img.src = "https://drive.google.com/thumbnail?id=" + ghMatch[1] + "&sz=w1600";
+        return;
+      }
+      if (typeof options.onError === "function") {
+        options.onError();
+      }
+    });
 
     var shield = document.createElement("div");
     shield.className = "protected-image-shield";
@@ -128,19 +269,34 @@
     return wrapper;
   }
 
+  function captureInitialFallbacks() {
+    var coverHost = document.getElementById("cover-photo-slot");
+    if (coverHost && !initialFallbacks.cover) {
+      initialFallbacks.cover = coverHost.innerHTML;
+    }
+    var profileHost = document.getElementById("profile-photo-slot");
+    if (profileHost && !initialFallbacks.profile) {
+      initialFallbacks.profile = profileHost.innerHTML;
+    }
+    var projectSlots = document.querySelectorAll("[data-project-image-key]");
+    projectSlots.forEach(function (slot) {
+      var key = slot.getAttribute("data-project-image-key");
+      if (key && !initialFallbacks.projects[key]) {
+        initialFallbacks.projects[key] = slot.innerHTML;
+      }
+    });
+  }
+
   function hydratePortfolioImages() {
-    var config = window.portfolioImages || {
-      cover: "/assets/cover-banner.jpg",
-      profile: "/assets/aistudio/Untitled_9d626b95.png",
-      projects: { schoolManagement: "", homeRenovation: "" },
-      certificates: [],
-    };
+    captureInitialFallbacks();
+    var config = getActiveConfig();
 
     // 0. Cover Banner Slot
     var coverHost = document.getElementById("cover-photo-slot");
     if (coverHost) {
-      var coverFallbackHtml = coverHost.innerHTML;
-      var coverUrl = config.cover || "/assets/cover-banner.jpg";
+      var coverUrl =
+        config.cover ||
+        "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png";
       if (isValidImageUrl(coverUrl)) {
         coverHost.innerHTML = "";
         var coverNode = createProtectedImageElement({
@@ -150,19 +306,18 @@
           wrapperClass: "linkedin-cover-img-wrapper",
           imgClass: "linkedin-cover-img",
           onError: function () {
-            coverHost.innerHTML = coverFallbackHtml;
+            coverHost.innerHTML = initialFallbacks.cover;
           },
         });
         coverHost.appendChild(coverNode);
       } else {
-        coverHost.addEventListener("contextmenu", preventContextAndDrag);
+        coverHost.innerHTML = initialFallbacks.cover;
       }
     }
 
     // 1. Profile Photograph Slot (Overlapping Circular Avatar)
     var profileHost = document.getElementById("profile-photo-slot");
     if (profileHost) {
-      var fallbackHtml = profileHost.innerHTML;
       if (isValidImageUrl(config.profile)) {
         profileHost.innerHTML = "";
         var profileNode = createProtectedImageElement({
@@ -171,23 +326,23 @@
           eager: true,
           wrapperClass: "cv-profile-photo",
           onError: function () {
-            profileHost.innerHTML = fallbackHtml;
+            profileHost.innerHTML = initialFallbacks.profile;
           },
         });
         profileHost.appendChild(profileNode);
       } else {
-        profileHost.addEventListener("contextmenu", preventContextAndDrag);
+        profileHost.innerHTML = initialFallbacks.profile;
       }
     }
 
-    // 2. Project Screenshot Slots (Keep clean neutral frames until configured in images.js)
+    // 2. Project Screenshot Slots
     var projectSlots = document.querySelectorAll("[data-project-image-key]");
     projectSlots.forEach(function (slot) {
       var key = slot.getAttribute("data-project-image-key");
       var title = slot.getAttribute("data-project-title") || key;
       if (!key) return;
 
-      var defaultFrameHtml = slot.innerHTML;
+      var defaultFrameHtml = initialFallbacks.projects[key] || slot.innerHTML;
       var urls = resolveScreenshots(config.projects && config.projects[key]);
       if (urls.length > 0) {
         slot.innerHTML = "";
@@ -208,10 +363,12 @@
         });
 
         slot.appendChild(stack);
+      } else {
+        slot.innerHTML = defaultFrameHtml;
       }
     });
 
-    // 3. Professional Certificates Gallery (Hide empty entries and restricted academic scans)
+    // 3. Professional Certificates Gallery
     var certGallery = document.getElementById("certificates-gallery");
     if (certGallery && Array.isArray(config.certificates)) {
       var published = config.certificates.filter(function (entry) {
@@ -272,18 +429,15 @@
             meta.appendChild(dateP);
           }
 
-          if (
-            typeof cert.verificationUrl === "string" &&
-            cert.verificationUrl.trim().indexOf("https://") === 0
-          ) {
+          if (isValidDocumentUrl(cert.verificationUrl)) {
             var verifyP = document.createElement("p");
             verifyP.className = "cv-certificate-verify";
             var verifyLink = document.createElement("a");
-            verifyLink.href = cert.verificationUrl.trim();
+            verifyLink.href = normalizeDocumentUrl(cert.verificationUrl);
             verifyLink.target = "_blank";
             verifyLink.rel = "noopener noreferrer";
             verifyLink.className = "cv-link";
-            verifyLink.textContent = "Verify Credential ↗";
+            verifyLink.textContent = "View / Download Certificate Document ↗";
             verifyP.appendChild(verifyLink);
             meta.appendChild(verifyP);
           }
@@ -300,9 +454,13 @@
   function triggerPdfDownload() {
     var scrollX = window.scrollX;
     var scrollY = window.scrollY;
+    var config = getActiveConfig();
+    var targetDoc = isValidDocumentUrl(config.cvDocument)
+      ? normalizeDocumentUrl(config.cvDocument)
+      : DEFAULT_RESUME_PDF_PATH;
 
     var anchor = document.createElement("a");
-    anchor.href = RESUME_PDF_PATH;
+    anchor.href = targetDoc;
     anchor.setAttribute("download", "Rifath_Ahamed_CV.pdf");
     anchor.rel = "noopener";
     anchor.style.display = "none";
@@ -311,6 +469,331 @@
     document.body.removeChild(anchor);
 
     window.scrollTo(scrollX, scrollY);
+  }
+
+  function setupMediaManagerModal() {
+    var openBtn = document.getElementById("open-media-manager-btn");
+    var modal = document.getElementById("media-manager-modal");
+    if (!modal || !openBtn) return;
+
+    // Strictly hide the Files & Links button from public visitors unless ?edit=true is in the URL
+    if (!isOwnerEditMode(window.location.search)) {
+      openBtn.setAttribute("hidden", "true");
+      modal.setAttribute("hidden", "true");
+      return;
+    }
+
+    openBtn.removeAttribute("hidden");
+
+    var closeBtn = document.getElementById("media-manager-close");
+    var saveBtn = document.getElementById("save-media-links-btn");
+    var exportBtn = document.getElementById("export-images-js-btn");
+    var resetBtn = document.getElementById("reset-media-links-btn");
+    var addCertBtn = document.getElementById("add-cert-row-btn");
+    var certListEl = document.getElementById("cert-editor-list");
+
+    var cvDocInput = document.getElementById("input-cv-doc-url");
+    var coverInput = document.getElementById("input-cover-url");
+    var profileInput = document.getElementById("input-profile-url");
+    var schoolInput = document.getElementById("input-proj-school-url");
+    var homeInput = document.getElementById("input-proj-home-url");
+
+    function bindFileToInput(fileInputId, textInputEl) {
+      var fileInput = document.getElementById(fileInputId);
+      if (!fileInput || !textInputEl) return;
+      fileInput.addEventListener("change", function (e) {
+        var file = e.target.files && e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+          if (ev.target && typeof ev.target.result === "string") {
+            textInputEl.value = ev.target.result;
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    bindFileToInput("upload-cv-doc-file", cvDocInput);
+    bindFileToInput("upload-cover-file", coverInput);
+    bindFileToInput("upload-profile-file", profileInput);
+    bindFileToInput("upload-proj-school-file", schoolInput);
+    bindFileToInput("upload-proj-home-file", homeInput);
+
+    function createCertRowElement(certData) {
+      var row = document.createElement("div");
+      row.className = "media-cert-row-card";
+
+      var topGrid = document.createElement("div");
+      topGrid.className = "media-cert-grid";
+
+      var titleInput = document.createElement("input");
+      titleInput.type = "text";
+      titleInput.className = "media-text-input cert-title-input";
+      titleInput.placeholder = "Certificate Title (e.g., AAT Sri Lanka)";
+      titleInput.value = (certData && certData.title) || "";
+
+      var issuerInput = document.createElement("input");
+      issuerInput.type = "text";
+      issuerInput.className = "media-text-input cert-issuer-input";
+      issuerInput.placeholder = "Issuer (e.g., AAT Sri Lanka)";
+      issuerInput.value = (certData && certData.issuer) || "";
+
+      var dateInput = document.createElement("input");
+      dateInput.type = "text";
+      dateInput.className = "media-text-input cert-date-input";
+      dateInput.placeholder = "Year / Status (e.g., 2025)";
+      dateInput.value = (certData && certData.date) || "";
+
+      topGrid.appendChild(titleInput);
+      topGrid.appendChild(issuerInput);
+      topGrid.appendChild(dateInput);
+
+      var imgRow = document.createElement("div");
+      imgRow.className = "media-input-row";
+
+      var imgUrlInput = document.createElement("input");
+      imgUrlInput.type = "text";
+      imgUrlInput.className = "media-text-input cert-img-input";
+      imgUrlInput.placeholder = "Certificate Image Link (Google Drive or URL)";
+      imgUrlInput.value = (certData && certData.imageUrl) || "";
+
+      var imgFileLabel = document.createElement("label");
+      imgFileLabel.className = "media-file-upload-label";
+      imgFileLabel.textContent = "Upload Image";
+      var imgFileInput = document.createElement("input");
+      imgFileInput.type = "file";
+      imgFileInput.accept = "image/*";
+      imgFileInput.className = "media-file-input-hidden";
+      imgFileInput.addEventListener("change", function (e) {
+        var f = e.target.files && e.target.files[0];
+        if (!f) return;
+        var r = new FileReader();
+        r.onload = function (ev) {
+          if (ev.target && typeof ev.target.result === "string") {
+            imgUrlInput.value = ev.target.result;
+          }
+        };
+        r.readAsDataURL(f);
+      });
+      imgFileLabel.appendChild(imgFileInput);
+      imgRow.appendChild(imgUrlInput);
+      imgRow.appendChild(imgFileLabel);
+
+      var docRow = document.createElement("div");
+      docRow.className = "media-input-row";
+
+      var docUrlInput = document.createElement("input");
+      docUrlInput.type = "text";
+      docUrlInput.className = "media-text-input cert-doc-input";
+      docUrlInput.placeholder = "Document / Verification Link (Google Drive PDF or URL)";
+      docUrlInput.value = (certData && certData.verificationUrl) || "";
+
+      var docFileLabel = document.createElement("label");
+      docFileLabel.className = "media-file-upload-label";
+      docFileLabel.textContent = "Upload PDF";
+      var docFileInput = document.createElement("input");
+      docFileInput.type = "file";
+      docFileInput.accept = ".pdf,application/pdf";
+      docFileInput.className = "media-file-input-hidden";
+      docFileInput.addEventListener("change", function (e) {
+        var f = e.target.files && e.target.files[0];
+        if (!f) return;
+        var r = new FileReader();
+        r.onload = function (ev) {
+          if (ev.target && typeof ev.target.result === "string") {
+            docUrlInput.value = ev.target.result;
+          }
+        };
+        r.readAsDataURL(f);
+      });
+      docFileLabel.appendChild(docFileInput);
+
+      var removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "media-small-btn media-remove-btn";
+      removeBtn.textContent = "Remove";
+      removeBtn.addEventListener("click", function () {
+        if (row.parentNode) row.parentNode.removeChild(row);
+      });
+
+      docRow.appendChild(docUrlInput);
+      docRow.appendChild(docFileLabel);
+      docRow.appendChild(removeBtn);
+
+      row.appendChild(topGrid);
+      row.appendChild(imgRow);
+      row.appendChild(docRow);
+      return row;
+    }
+
+    function populateModalFromConfig() {
+      var cfg = getActiveConfig();
+      if (cvDocInput) cvDocInput.value = cfg.cvDocument || DEFAULT_RESUME_PDF_PATH;
+      if (coverInput) {
+        coverInput.value =
+          cfg.cover ||
+          "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png";
+      }
+      if (profileInput) {
+        profileInput.value = cfg.profile || "/assets/aistudio/Untitled_9d626b95.png";
+      }
+      if (schoolInput) {
+        schoolInput.value =
+          (cfg.projects && typeof cfg.projects.schoolManagement === "string"
+            ? cfg.projects.schoolManagement
+            : "") || "";
+      }
+      if (homeInput) {
+        homeInput.value =
+          (cfg.projects && typeof cfg.projects.homeRenovation === "string"
+            ? cfg.projects.homeRenovation
+            : "") || "";
+      }
+      if (certListEl) {
+        certListEl.innerHTML = "";
+        var certs =
+          Array.isArray(cfg.certificates) && cfg.certificates.length > 0
+            ? cfg.certificates
+            : [{ title: "", issuer: "", date: "", imageUrl: "", verificationUrl: "" }];
+        certs.forEach(function (c) {
+          certListEl.appendChild(createCertRowElement(c));
+        });
+      }
+    }
+
+    function collectConfigFromModal() {
+      var certs = [];
+      if (certListEl) {
+        var rows = certListEl.querySelectorAll(".media-cert-row-card");
+        rows.forEach(function (r) {
+          var t = r.querySelector(".cert-title-input");
+          var i = r.querySelector(".cert-issuer-input");
+          var d = r.querySelector(".cert-date-input");
+          var img = r.querySelector(".cert-img-input");
+          var doc = r.querySelector(".cert-doc-input");
+          certs.push({
+            title: t ? t.value.trim() : "",
+            issuer: i ? i.value.trim() : "",
+            date: d ? d.value.trim() : "",
+            imageUrl: img ? img.value.trim() : "",
+            verificationUrl: doc ? doc.value.trim() : "",
+          });
+        });
+      }
+      return {
+        cvDocument:
+          cvDocInput && cvDocInput.value.trim()
+            ? cvDocInput.value.trim()
+            : DEFAULT_RESUME_PDF_PATH,
+        cover:
+          coverInput && coverInput.value.trim()
+            ? coverInput.value.trim()
+            : "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
+        profile:
+          profileInput && profileInput.value.trim()
+            ? profileInput.value.trim()
+            : "/assets/aistudio/Untitled_9d626b95.png",
+        projects: {
+          schoolManagement: schoolInput ? schoolInput.value.trim() : "",
+          homeRenovation: homeInput ? homeInput.value.trim() : "",
+        },
+        certificates:
+          certs.length > 0
+            ? certs
+            : [{ title: "", issuer: "", date: "", imageUrl: "", verificationUrl: "" }],
+      };
+    }
+
+    function openModal() {
+      populateModalFromConfig();
+      modal.removeAttribute("hidden");
+    }
+
+    function closeModal() {
+      modal.setAttribute("hidden", "true");
+    }
+
+    openBtn.addEventListener("click", openModal);
+    if (closeBtn) closeBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) closeModal();
+    });
+
+    if (addCertBtn && certListEl) {
+      addCertBtn.addEventListener("click", function () {
+        certListEl.appendChild(
+          createCertRowElement({ title: "", issuer: "", date: "", imageUrl: "", verificationUrl: "" })
+        );
+      });
+    }
+
+    if (saveBtn) {
+      saveBtn.addEventListener("click", function () {
+        var updated = collectConfigFromModal();
+        window.portfolioImages = updated;
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        } catch (_err) {
+          // ignore storage quota errors
+        }
+        hydratePortfolioImages();
+        closeModal();
+      });
+    }
+
+    if (resetBtn) {
+      resetBtn.addEventListener("click", function () {
+        try {
+          window.localStorage.removeItem(STORAGE_KEY);
+        } catch (_err) {
+          // ignore
+        }
+        window.portfolioImages = {
+          cvDocument: DEFAULT_RESUME_PDF_PATH,
+          cover: "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
+          profile: "/assets/aistudio/Untitled_9d626b95.png",
+          projects: { schoolManagement: "", homeRenovation: "" },
+          certificates: [{ title: "", issuer: "", date: "", imageUrl: "", verificationUrl: "" }],
+        };
+        hydratePortfolioImages();
+        populateModalFromConfig();
+      });
+    }
+
+    if (exportBtn) {
+      exportBtn.addEventListener("click", function () {
+        var cfg = collectConfigFromModal();
+        var content =
+          "/**\n" +
+          " * CENTRALIZED DOCUMENT & IMAGE LINK SYSTEM — RIFATH AHAMED PORTFOLIO\n" +
+          " */\n\n" +
+          "const portfolioImages = " +
+          JSON.stringify(cfg, null, 2) +
+          ";\n\n" +
+          'if (typeof window !== "undefined") {\n' +
+          "  window.portfolioImages = portfolioImages;\n" +
+          "}\n\n" +
+          'if (typeof module !== "undefined" && module.exports) {\n' +
+          "  module.exports = { portfolioImages };\n" +
+          "}\n";
+        var blob = new Blob([content], { type: "application/javascript;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "images.js";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    window.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !modal.hasAttribute("hidden")) {
+        closeModal();
+      }
+    });
   }
 
   function setupInteractions() {
@@ -401,9 +884,11 @@
     document.addEventListener("DOMContentLoaded", function () {
       hydratePortfolioImages();
       setupInteractions();
+      setupMediaManagerModal();
     });
   } else {
     hydratePortfolioImages();
     setupInteractions();
+    setupMediaManagerModal();
   }
 })();

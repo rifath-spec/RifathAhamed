@@ -7,7 +7,8 @@ declare global {
 }
 
 export const defaultPortfolioImages: PortfolioImagesConfig = {
-  cover: '/assets/cover-banner.jpg',
+  cvDocument: '/assets/resume.pdf',
+  cover: '/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png',
   profile: '/assets/aistudio/Untitled_9d626b95.png',
 
   projects: {
@@ -33,6 +34,7 @@ export const defaultPortfolioImages: PortfolioImagesConfig = {
 export function getPortfolioImages(): PortfolioImagesConfig {
   if (typeof window !== 'undefined' && window.portfolioImages) {
     return {
+      cvDocument: window.portfolioImages.cvDocument ?? defaultPortfolioImages.cvDocument,
       cover: window.portfolioImages.cover ?? defaultPortfolioImages.cover,
       profile: window.portfolioImages.profile ?? '',
       projects: {

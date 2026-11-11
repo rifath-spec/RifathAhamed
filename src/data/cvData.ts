@@ -73,85 +73,64 @@ export interface CVData {
 export const cvData: CVData = {
   personalInfo: {
     fullName: 'RIFATH AHAMED',
-    designation:
-      'BSc in Management & Information Technology (Second Class Upper Honours) | MIS, Operations & Accounting Systems Professional',
-    email: 'rifathahamed.official@gmail.com',
-    // Replace with your verified telephone number when publishing:
-    telephone: 'Available upon request',
-    location: 'Sri Lanka',
-    // Replace with your verified LinkedIn profile URL when publishing:
-    linkedinLabel: 'linkedin.com/in/rifath-ahamed',
+    designation: 'ADMINISTRATIVE ASSISTANT | OFFICE OPERATIONS | DOCUMENTATION & IT SUPPORT',
+    email: 'arifath98@gmail.com',
+    telephone: '075-0927652',
+    location: 'Trincomalee, Sri Lanka',
+    linkedinLabel: '',
     linkedinUrl: '',
-    resumePdfPath: 'assets/resume.pdf',
+    resumePdfPath: '/assets/resume.pdf',
   },
 
   professionalSummary: [
-    'Detail-oriented Management and Information Technology graduate holding a Bachelor of Science (Second Class Upper Honours, GPA 3.50/4.00) from the South Eastern University of Sri Lanka, alongside an ongoing professional accounting qualification with the Association of Accounting Technicians of Sri Lanka (AAT Sri Lanka).',
-    'Possesses practical experience across Management Information Systems (MIS), operational and transport coordination, administrative and HR systems support, financial systems and accounts checking, and IT infrastructure support. Proven ability to bridge business operations, financial record accuracy, and software/database systems to maintain reliable organizational workflows and management reporting.',
+    'Detail-oriented Administrative and Office Support professional with a BSc in Management and Information Technology (Second Class Upper Honours, GPA 3.50/4.00) and practical experience in administrative coordination, financial record keeping, documentation, reporting and daily operations support. Proficient in Microsoft Office applications, particularly Excel, Word, Access and Outlook, with practical skills in data management, report preparation, database management and dashboard creation. Experienced in supporting transportation operations, employee attendance records, salary-related documentation and project administration. Possesses strong organizational, analytical and communication skills, with the ability to support efficient office operations.',
   ],
 
   coreCompetencies: [
-    {
-      title: 'MIS & Operational Coordination',
-      description:
-        'Structuring operational data, maintaining accurate digital records, and coordinating daily schedules, logistics, and management reporting.',
-    },
-    {
-      title: 'Administrative & HR Systems Support',
-      description:
-        'Supporting personnel records, attendance-linked operational tracking, documentation workflows, and cross-departmental administration.',
-    },
-    {
-      title: 'Financial Systems & Reporting Support',
-      description:
-        'Accounts checking, voucher and invoice verification, expense reconciliation, and structured financial documentation aligned with AAT accounting standards.',
-    },
-    {
-      title: 'IT Infrastructure & Systems Support',
-      description:
-        'Relational database administration (SQL Server, MySQL), desktop/web application support, system configuration, and technical troubleshooting.',
-    },
-    {
-      title: 'Database & Application Development',
-      description:
-        'Designing and implementing structured information systems using C#, SQL Server, PHP, HTML, CSS, JavaScript, and MySQL.',
-    },
-    {
-      title: 'Process Compliance & Documentation',
-      description:
-        'Maintaining audit-ready operational logs, standardizing administrative spreadsheets, and verifying compliance across vendor and site operations.',
-    },
+    { title: 'Administrative & Office Support', description: '' },
+    { title: 'Document Management & Record Keeping', description: '' },
+    { title: 'Financial Records & Invoice Checking', description: '' },
+    { title: 'Data Entry & Information Management', description: '' },
+    { title: 'Report Preparation & Documentation', description: '' },
+    { title: 'Employee Attendance & Payroll Documentation', description: '' },
+    { title: 'Operations & Staff Coordination', description: '' },
+    { title: 'Scheduling & Administrative Support', description: '' },
+    { title: 'Microsoft Office & Database Management', description: '' },
+    { title: 'Project Documentation & Monitoring', description: '' },
   ],
 
   workExperience: [
     {
       id: 'jay-jay-mills-2025',
-      role: 'Transport Management Intern',
+      role: 'Transport Management Intern – Administrative & Operations Support',
       organization: 'Jay Jay Mills Lanka (Pvt) Ltd',
       period: '2025',
-      location: 'Sri Lanka',
-      summary:
-        'Supported factory and administrative transport operations, MIS record maintenance, and cross-functional logistics coordination.',
+      location: 'Trincomalee, Sri Lanka',
+      summary: '',
       responsibilities: [
-        'Coordinated daily employee and operational transport schedules, route allocations, and vehicle deployment to ensure punctual and uninterrupted organizational operations.',
-        'Maintained and updated transport Management Information Systems (MIS) spreadsheets and logs, tracking trip records, vehicle utilization, mileage, and fuel consumption.',
-        'Worked closely with administrative, HR, and operational departments to align shift attendance records with transport requirements and resolve daily scheduling bottlenecks.',
-        'Verified transport service records, supplier/vendor trip documentation, and operational checklists to support accurate periodic reporting and cost monitoring.',
+        'Prepared and updated daily transportation schedules to support smooth business operations.',
+        'Coordinated staff transportation and communicated with HR and other departments.',
+        'Coordinated vehicle and driver activities to support timely transportation services.',
+        'Prepared transport reports and maintained accurate vehicle records.',
+        'Monitored vehicle-related expenses and maintained transportation information.',
+        'Checked vehicle maintenance schedules to support operational efficiency.',
+        'Used Microsoft Excel and internal company software for transport coordination and record management.',
       ],
     },
     {
       id: 'grace-construction-2019-2021',
-      role: 'Supervisor & Accounts Checker',
+      role: 'Management Assistant – Administrative & Accounts Support',
       organization: 'Grace Construction',
-      period: '2019 – 2021',
-      location: 'Sri Lanka',
-      summary:
-        'Combined on-site operational supervision with systematic accounts verification, expense tracking, and administrative record keeping.',
+      period: '2019–2021',
+      location: 'Trincomalee, Sri Lanka',
+      summary: '',
       responsibilities: [
-        'Supervised daily site operations, workforce allocation, and material usage to ensure project activities progressed in accordance with operational schedules and quality standards.',
-        'Performed rigorous accounts checking, reviewing supplier invoices, payment vouchers, delivery notes, and site expense statements for arithmetic and documentary accuracy.',
-        'Maintained daily financial ledgers, petty cash reconciliations, labor attendance sheets, and material inventory records to support management financial reporting.',
-        'Liaised between site teams, material vendors, and management to resolve discrepancies in billing or inventory and maintain transparent operational documentation.',
+        'Maintained financial records and updated business information using Microsoft Excel.',
+        'Checked bills, invoices and payment records to support accurate financial documentation.',
+        'Prepared daily reports and maintained organized project records.',
+        'Assisted with employee attendance records and salary-related documentation.',
+        'Monitored project activities and supported day-to-day administrative operations.',
+        'Coordinated administrative and financial information to support project management activities.',
       ],
     },
   ],
@@ -159,29 +138,21 @@ export const cvData: CVData = {
   education: [
     {
       id: 'bsc-mit-seusl',
-      degree: 'Bachelor of Science in Management and Information Technology',
+      degree: 'Bachelor of Science (BSc) in Management and Information Technology',
       institution: 'South Eastern University of Sri Lanka',
-      period: '2021 – 2025',
+      period: '2021–2025',
       statusOrClassification: 'Second Class Upper Honours',
-      gpa: '3.50 / 4.00',
-      specialization: 'Management and Information Technology (MIS, Operations, Enterprise & Database Systems)',
-      finalYearProject:
-        'Academic & Capstone Systems Development — Designed and implemented structured database-driven software solutions including a C# / SQL Server School Management System and a PHP / MySQL Home Repair & Renovation Web Platform.',
-      details: [
-        'Graduated with Second Class Upper Honours, achieving a cumulative Grade Point Average (GPA) of 3.50 / 4.00.',
-        'Completed core coursework spanning Management Information Systems (MIS), Database Management Systems, Software Engineering, Operations Management, Financial & Managerial Accounting, Human Resource Management, and IT Infrastructure.',
-      ],
+      gpa: '3.50/4.00',
+      specialization: '60% Management, 40% Information Technology',
+      details: [],
     },
     {
       id: 'aat-sri-lanka',
       degree: 'Association of Accounting Technicians (AAT Sri Lanka)',
-      institution: 'AAT Sri Lanka',
-      period: 'In Progress',
-      statusOrClassification: 'Ongoing Professional Qualification',
-      details: [
-        'Pursuing professional accounting technician qualification focused on Financial Accounting, Quantitative Techniques, Business Environment, Costing, Auditing, and Accounting Systems.',
-        'Strengthens practical capability in financial systems support, accounts checking, ledger reconciliation, and management reporting.',
-      ],
+      institution: 'Zip Campus, Sri Lanka',
+      period: 'Currently Pursuing',
+      statusOrClassification: 'Currently Pursuing',
+      details: [],
     },
   ],
 
@@ -190,14 +161,12 @@ export const cvData: CVData = {
       id: 'school-management-system',
       imageKey: 'schoolManagement',
       title: 'School Management System',
-      category: 'Desktop Information System & Relational Database',
+      category: 'C# & SQL Server',
       techStack: ['C#', 'SQL Server'],
-      description:
-        'A desktop-based School Management System developed using C# and Microsoft SQL Server to centralize and automate core academic and administrative school operations. Designed with a normalized relational database architecture to ensure data integrity, fast querying, and structured administrative workflows.',
+      description: '',
       highlights: [
-        'Engineered C# desktop forms and business logic for managing student enrollment, academic profiles, teacher/staff records, and class allocations.',
-        'Designed and implemented a Microsoft SQL Server relational database handling attendance logs, examination marks, fee records, and structured administrative queries.',
-        'Built input validation, search/filter utilities, and summary report views to reduce manual paperwork and improve record accuracy for school administrators.',
+        'Designed a relational database to manage student, teacher, course and guardian information.',
+        'Implemented data organization and administrative information management features.',
       ],
       liveUrl: '',
       githubUrl: '',
@@ -206,14 +175,12 @@ export const cvData: CVData = {
       id: 'home-repair-renovation-website',
       imageKey: 'homeRenovation',
       title: 'Home Repair & Renovation Website',
-      category: 'Full-Stack Web Application',
+      category: 'PHP, HTML, CSS, JavaScript & MySQL',
       techStack: ['PHP', 'HTML', 'CSS', 'JavaScript', 'MySQL'],
-      description:
-        'A responsive full-stack web application built with PHP, HTML, CSS, JavaScript, and MySQL to facilitate home repair, maintenance, and renovation service management. Connects clients with categorized repair services and provides structured service request and administrative tracking workflows.',
+      description: '',
       highlights: [
-        'Developed responsive, user-friendly frontend interfaces using HTML, CSS, and JavaScript with client-side form validation and clear service navigation.',
-        'Implemented server-side logic in PHP integrated with a MySQL relational database to process customer inquiries, service bookings, and project quotations.',
-        'Created administrative management modules to review incoming service requests, update service statuses, and maintain structured client and service records.',
+        'Developed a web-based platform for renovation services, user registration and task tracking.',
+        'Worked on front-end design, back-end functionality and database integration.',
       ],
       liveUrl: '',
       githubUrl: '',
@@ -222,85 +189,67 @@ export const cvData: CVData = {
 
   technicalSkills: [
     {
-      category: 'Management Information Systems & Operations',
+      category: 'Microsoft Excel – Advanced',
       items: [
-        'MIS Data Entry, Validation & Reporting',
-        'Transport & Fleet Operations Coordination',
-        'Administrative & HR Record Systems',
-        'Inventory & Material Tracking',
+        'Formulas and functions (IF, SUMIF, COUNTIF)',
+        'Pivot Tables and Charts',
+        'VLOOKUP and XLOOKUP',
+        'Data Cleaning and Data Validation',
+        'Dashboard Creation and Reporting',
       ],
     },
     {
-      category: 'Financial & Accounting Systems Support',
+      category: 'Microsoft Word – Advanced',
       items: [
-        'Accounts Checking & Voucher Verification',
-        'Invoice & Billing Reconciliation',
-        'Petty Cash & Expense Ledger Maintenance',
-        'Financial Reporting Support (AAT Sri Lanka — In Progress)',
+        'Professional Letters and Reports',
+        'Document Formatting and Page Layout',
+        'Tables and Mail Merge',
       ],
     },
     {
-      category: 'Programming & Web Technologies',
-      items: ['C#', 'PHP', 'HTML5', 'CSS3', 'JavaScript'],
-    },
-    {
-      category: 'Database Management Systems',
+      category: 'Microsoft Access – Advanced',
       items: [
-        'Microsoft SQL Server',
-        'MySQL',
-        'Relational Database Design',
-        'SQL Queries & Data Reporting',
+        'Database Creation and Management',
+        'Table and Query Development',
+        'Forms and Reports',
+        'Table Relationships and Primary Keys',
+        'Data Validation',
+        'Excel Data Import and Export',
       ],
     },
     {
-      category: 'IT Infrastructure & Office Productivity',
+      category: 'Other Applications',
       items: [
-        'Microsoft Excel (Spreadsheets, Formulas, Pivot Tables, MIS Reports)',
-        'Microsoft Word & PowerPoint',
-        'IT Hardware, Software & Systems Troubleshooting',
-        'User & Operational Systems Support',
+        'Microsoft PowerPoint – Advanced',
+        'Microsoft Outlook – Advanced',
+        'Microsoft Project – Intermediate',
+        'Email Management and Calendar Scheduling',
       ],
     },
   ],
 
-  professionalStrengths: [
-    {
-      title: 'Analytical & Detail-Oriented Execution',
-      detail:
-        'Methodical approach to verifying financial accounts, reconciling operational logs, and maintaining error-free MIS datasets.',
-    },
-    {
-      title: 'Cross-Functional Operational Coordination',
-      detail:
-        'Demonstrated capability in coordinating between management, HR/administration, transport staff, site teams, and external vendors.',
-    },
-    {
-      title: 'Dual Management & IT Fluency',
-      detail:
-        'Combines academic grounding in BSc Management & Information Technology (GPA 3.50/4.00) with practical accounting and software development skills.',
-    },
-    {
-      title: 'Supervisory & Time-Management Discipline',
-      detail:
-        'Proven track record of supervising daily operations, prioritizing competing deadlines, and maintaining clear accountability.',
-    },
-  ],
+  professionalStrengths: [],
 
   languages: [
     {
       language: 'English',
-      proficiency: 'Professional Working Proficiency',
-      detail: 'Business communication, technical documentation, MIS reporting, and academic/professional writing.',
+      proficiency: 'Professional Proficiency (Speaking & Writing)',
+      detail: '',
     },
     {
       language: 'Tamil',
-      proficiency: 'Native / Bilingual Proficiency',
-      detail: 'Full native fluency in spoken and written communication.',
+      proficiency: 'Native Proficiency',
+      detail: '',
     },
     {
       language: 'Sinhala',
-      proficiency: 'Working / Conversational Proficiency',
-      detail: 'Effective workplace and operational communication.',
+      proficiency: 'Intermediate Proficiency',
+      detail: '',
+    },
+    {
+      language: 'Arabic',
+      proficiency: 'Basic Proficiency',
+      detail: '',
     },
   ],
 };
