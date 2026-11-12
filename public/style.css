@@ -633,14 +633,16 @@ body {
    ========================================================================== */
 
 .text-justify {
+  width: 100%;
+  max-width: 100%;
   text-align: justify;
   text-justify: inter-word;
   text-align-last: left;
-  hyphens: auto;
-  -webkit-hyphens: auto;
+  hyphens: none;
+  -webkit-hyphens: none;
   overflow-wrap: break-word;
   word-break: normal;
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 [dir="rtl"] .text-justify {
@@ -651,22 +653,26 @@ body {
   .text-justify {
     text-align: left;
     text-align-last: auto;
-    hyphens: manual;
-    -webkit-hyphens: manual;
   }
 }
 
-@media (min-width: 769px) {
-  .text-justify {
-    max-width: 65ch;
-  }
+.cv-summary-content {
+  display: block;
+  width: 100%;
+}
+
+.cv-summary-content .cv-body-paragraph {
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  line-height: 1.6;
 }
 
 .cv-body-paragraph {
   margin: 0 0 12px 0;
   font-size: 0.875rem;
   font-weight: 400;
-  line-height: 1.55;
+  line-height: 1.6;
   color: var(--color-body-text);
 }
 
@@ -800,6 +806,11 @@ body {
   font-weight: 400;
   line-height: 1.55;
   color: var(--color-body-text);
+}
+
+.cv-project-text-column .cv-bullet-item {
+  text-align: left;
+  text-align-last: left;
 }
 
 .cv-education-meta {
@@ -1219,6 +1230,18 @@ body {
     gap: 16px;
   }
 
+  #professional-summary,
+  #core-competencies,
+  #projects,
+  #work-experience,
+  #education,
+  #certifications,
+  #technical-skills,
+  #languages,
+  #contact-information {
+    order: initial;
+  }
+
   .cv-section-card {
     border: 1px solid var(--color-card-border);
     border-radius: 12px;
@@ -1363,6 +1386,18 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
+  }
+
+  #professional-summary,
+  #core-competencies,
+  #projects,
+  #work-experience,
+  #education,
+  #certifications,
+  #technical-skills,
+  #languages,
+  #contact-information {
+    order: initial;
   }
 
   .cv-section-card {
