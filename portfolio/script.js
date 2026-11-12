@@ -1,19 +1,32 @@
 /**
  * STANDALONE VANILLA JAVASCRIPT CONTROLLER — RIFATH AHAMED PORTFOLIO
  * ==================================================================
- * Connects portfolioImages (from images.js + localStorage overrides) to the semantic HTML5 DOM,
- * hydrates the LinkedIn-style cover banner, circular profile photo, project screenshots,
- * certificates gallery, and CV PDF download link, and powers the owner-only (?edit=true)
- * "Files & Links" Upload & Link Manager Modal.
+ * 1. Hydrates portfolioImages (from images.js + localStorage overrides) into the DOM.
+ * 2. Powers the reusable EditButton & EditModal dummy placeholder system controlled
+ *    by the `isAdminMode` constant (set to `true` by default).
+ * 3. Powers mobile action buttons ("Hire me", "Download CV", "More actions", "View my services"),
+ *    bottom tab bar navigation, handshake thank-you modal, and owner (?edit=true) media manager.
  */
 
 (function () {
   var POPUP_AUTO_CLOSE_MS = 4000;
   var DEFAULT_RESUME_PDF_PATH = "/assets/resume.pdf";
   var STORAGE_KEY = "rifath_portfolio_media_v1";
+  var DUMMY_EDIT_MESSAGE =
+    "Editing will be available after the admin backend is connected";
+
+  /**
+   * Toggle constant to show or hide all dummy edit buttons across phone, tablet, and desktop.
+   * Reads from window.isAdminMode (defined in images.js) and defaults to true.
+   */
+  var isAdminMode =
+    typeof window.isAdminMode === "boolean" ? window.isAdminMode : true;
+
   var popupTimer = null;
   var isPopupOpen = false;
   var lastTriggerElement = null;
+  var lastDummyEditTrigger = null;
+
   var initialFallbacks = {
     cover: "",
     profile: "",
@@ -163,8 +176,10 @@
   function getActiveConfig() {
     var base = window.portfolioImages || {
       cvDocument: DEFAULT_RESUME_PDF_PATH,
-      cover: "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
+      cover:
+        "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
       profile: "/assets/aistudio/Untitled_9d626b95.png",
+      connectionsPlaceholder: "[YOUR CONNECTIONS]",
       projects: { schoolManagement: "", homeRenovation: "" },
       certificates: [],
     };
@@ -180,18 +195,23 @@
           cover:
             typeof saved.cover === "string" && saved.cover.trim()
               ? saved.cover
-              : base.cover || "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
+              : base.cover ||
+                "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
           profile:
             typeof saved.profile === "string" && saved.profile.trim()
               ? saved.profile
               : base.profile || "/assets/aistudio/Untitled_9d626b95.png",
+          connectionsPlaceholder:
+            base.connectionsPlaceholder || "[YOUR CONNECTIONS]",
           projects: {
             schoolManagement:
-              saved.projects && typeof saved.projects.schoolManagement === "string"
+              saved.projects &&
+              typeof saved.projects.schoolManagement === "string"
                 ? saved.projects.schoolManagement
                 : (base.projects && base.projects.schoolManagement) || "",
             homeRenovation:
-              saved.projects && typeof saved.projects.homeRenovation === "string"
+              saved.projects &&
+              typeof saved.projects.homeRenovation === "string"
                 ? saved.projects.homeRenovation
                 : (base.projects && base.projects.homeRenovation) || "",
           },
@@ -207,10 +227,15 @@
     }
     return {
       cvDocument: base.cvDocument || DEFAULT_RESUME_PDF_PATH,
-      cover: base.cover || "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
+      cover:
+        base.cover ||
+        "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
       profile: base.profile || "/assets/aistudio/Untitled_9d626b95.png",
+      connectionsPlaceholder:
+        base.connectionsPlaceholder || "[YOUR CONNECTIONS]",
       projects: {
-        schoolManagement: (base.projects && base.projects.schoolManagement) || "",
+        schoolManagement:
+          (base.projects && base.projects.schoolManagement) || "",
         homeRenovation: (base.projects && base.projects.homeRenovation) || "",
       },
       certificates: Array.isArray(base.certificates) ? base.certificates : [],
@@ -223,7 +248,8 @@
 
   function createProtectedImageElement(options) {
     var wrapper = document.createElement("div");
-    wrapper.className = "protected-image-wrapper " + (options.wrapperClass || "");
+    wrapper.className =
+      "protected-image-wrapper " + (options.wrapperClass || "");
     wrapper.addEventListener("contextmenu", preventContextAndDrag);
     wrapper.addEventListener("dragstart", preventContextAndDrag);
 
@@ -242,10 +268,13 @@
     img.addEventListener("error", function () {
       var ghMatch =
         typeof img.src === "string" &&
-        img.src.match(/^https:\/\/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)$/);
+        img.src.match(
+          /^https:\/\/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)$/
+        );
       if (ghMatch && ghMatch[1] && !triedDriveThumbnailFallback) {
         triedDriveThumbnailFallback = true;
-        img.src = "https://drive.google.com/thumbnail?id=" + ghMatch[1] + "&sz=w1600";
+        img.src =
+          "https://drive.google.com/thumbnail?id=" + ghMatch[1] + "&sz=w1600";
         return;
       }
       if (typeof options.onError === "function") {
@@ -290,6 +319,12 @@
   function hydratePortfolioImages() {
     captureInitialFallbacks();
     var config = getActiveConfig();
+
+    // Update connections placeholder text if customized in images.js
+    var connEl = document.getElementById("mobile-connections-placeholder");
+    if (connEl && config.connectionsPlaceholder) {
+      connEl.textContent = config.connectionsPlaceholder;
+    }
 
     // 0. Cover Banner Slot
     var coverHost = document.getElementById("cover-photo-slot");
@@ -373,7 +408,8 @@
     if (certGallery && Array.isArray(config.certificates)) {
       var published = config.certificates.filter(function (entry) {
         if (!entry || typeof entry !== "object") return false;
-        if (typeof entry.title !== "string" || !entry.title.trim()) return false;
+        if (typeof entry.title !== "string" || !entry.title.trim())
+          return false;
         if (isRestrictedAcademicDocument(entry.title)) return false;
         return true;
       });
@@ -391,11 +427,16 @@
             imgBox.className = "cv-certificate-image-box";
             var certImg = createProtectedImageElement({
               src: normalizeImageUrl(cert.imageUrl),
-              alt: cert.title.trim() + " — Issued by " + (cert.issuer || "Issuing Institution"),
+              alt:
+                cert.title.trim() +
+                " — Issued by " +
+                (cert.issuer || "Issuing Institution"),
               eager: false,
               wrapperClass: "cv-certificate-preview",
               watermarkText:
-                cert.watermark !== false ? "Rifath Ahamed · Portfolio Copy" : "",
+                cert.watermark !== false
+                  ? "Rifath Ahamed · Portfolio Copy"
+                  : "",
             });
             imgBox.appendChild(certImg);
             article.appendChild(imgBox);
@@ -437,7 +478,7 @@
             verifyLink.target = "_blank";
             verifyLink.rel = "noopener noreferrer";
             verifyLink.className = "cv-link";
-            verifyLink.textContent = "View / Download Certificate Document ↗";
+            verifyLink.textContent = "View / Download Certificate Document";
             verifyP.appendChild(verifyLink);
             meta.appendChild(verifyP);
           }
@@ -469,6 +510,114 @@
     document.body.removeChild(anchor);
 
     window.scrollTo(scrollX, scrollY);
+  }
+
+  /**
+   * REUSABLE DUMMY EDIT BUTTON & MODAL CONTROLLER (EditButton + EditModal)
+   * ======================================================================
+   * Placeholder behaviour: opens a modal titled "Edit [section name]" with the message
+   * "Editing will be available after the admin backend is connected" and a Close button.
+   * Traps focus inside the modal, closes on Escape, and returns focus to the triggering button.
+   */
+  function setupDummyEditModal() {
+    var editButtons = document.querySelectorAll("[data-edit-section]");
+    var modal = document.getElementById("dummy-edit-modal");
+    var titleEl = document.getElementById("dummy-edit-modal-title");
+    var bodyEl = document.getElementById("dummy-edit-modal-body");
+    var closeBtn = document.getElementById("dummy-edit-modal-close");
+    var iconCloseBtn = document.getElementById("dummy-edit-modal-icon-close");
+
+    // Hide all dummy edit buttons if isAdminMode is switched off
+    if (!isAdminMode) {
+      editButtons.forEach(function (btn) {
+        btn.setAttribute("hidden", "true");
+      });
+      if (modal) modal.setAttribute("hidden", "true");
+      return;
+    }
+
+    if (!modal || !titleEl || !bodyEl) return;
+
+    function openDummyModal(sectionName, triggerButton) {
+      lastDummyEditTrigger = triggerButton || document.activeElement;
+      var cleanSection =
+        typeof sectionName === "string" && sectionName.trim()
+          ? sectionName.trim()
+          : "Section";
+      titleEl.textContent = "Edit " + cleanSection;
+      bodyEl.textContent = DUMMY_EDIT_MESSAGE;
+      modal.removeAttribute("hidden");
+
+      if (closeBtn && typeof closeBtn.focus === "function") {
+        window.setTimeout(function () {
+          closeBtn.focus({ preventScroll: true });
+        }, 15);
+      }
+    }
+
+    function closeDummyModal() {
+      if (modal.hasAttribute("hidden")) return;
+      modal.setAttribute("hidden", "true");
+      if (
+        lastDummyEditTrigger &&
+        typeof lastDummyEditTrigger.focus === "function"
+      ) {
+        var target = lastDummyEditTrigger;
+        window.setTimeout(function () {
+          target.focus({ preventScroll: true });
+        }, 15);
+      }
+    }
+
+    editButtons.forEach(function (btn) {
+      btn.removeAttribute("hidden");
+      btn.addEventListener("click", function (e) {
+        var section =
+          btn.getAttribute("data-edit-section") || "Profile Section";
+        openDummyModal(section, e.currentTarget);
+      });
+    });
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", closeDummyModal);
+    }
+    if (iconCloseBtn) {
+      iconCloseBtn.addEventListener("click", closeDummyModal);
+    }
+
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) {
+        closeDummyModal();
+      }
+    });
+
+    // Focus trap and Escape key handling inside Dummy Edit Modal
+    window.addEventListener("keydown", function (e) {
+      if (modal.hasAttribute("hidden")) return;
+
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeDummyModal();
+        return;
+      }
+
+      if (e.key === "Tab") {
+        var focusables = modal.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusables.length) return;
+        var first = focusables[0];
+        var last = focusables[focusables.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    });
   }
 
   function setupMediaManagerModal() {
@@ -555,7 +704,8 @@
       var imgUrlInput = document.createElement("input");
       imgUrlInput.type = "text";
       imgUrlInput.className = "media-text-input cert-img-input";
-      imgUrlInput.placeholder = "Certificate Image Link (Google Drive or URL)";
+      imgUrlInput.placeholder =
+        "Certificate Image Link (Google Drive or URL)";
       imgUrlInput.value = (certData && certData.imageUrl) || "";
 
       var imgFileLabel = document.createElement("label");
@@ -586,7 +736,8 @@
       var docUrlInput = document.createElement("input");
       docUrlInput.type = "text";
       docUrlInput.className = "media-text-input cert-doc-input";
-      docUrlInput.placeholder = "Document / Verification Link (Google Drive PDF or URL)";
+      docUrlInput.placeholder =
+        "Document / Verification Link (Google Drive PDF or URL)";
       docUrlInput.value = (certData && certData.verificationUrl) || "";
 
       var docFileLabel = document.createElement("label");
@@ -629,18 +780,21 @@
 
     function populateModalFromConfig() {
       var cfg = getActiveConfig();
-      if (cvDocInput) cvDocInput.value = cfg.cvDocument || DEFAULT_RESUME_PDF_PATH;
+      if (cvDocInput)
+        cvDocInput.value = cfg.cvDocument || DEFAULT_RESUME_PDF_PATH;
       if (coverInput) {
         coverInput.value =
           cfg.cover ||
           "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png";
       }
       if (profileInput) {
-        profileInput.value = cfg.profile || "/assets/aistudio/Untitled_9d626b95.png";
+        profileInput.value =
+          cfg.profile || "/assets/aistudio/Untitled_9d626b95.png";
       }
       if (schoolInput) {
         schoolInput.value =
-          (cfg.projects && typeof cfg.projects.schoolManagement === "string"
+          (cfg.projects &&
+          typeof cfg.projects.schoolManagement === "string"
             ? cfg.projects.schoolManagement
             : "") || "";
       }
@@ -655,7 +809,15 @@
         var certs =
           Array.isArray(cfg.certificates) && cfg.certificates.length > 0
             ? cfg.certificates
-            : [{ title: "", issuer: "", date: "", imageUrl: "", verificationUrl: "" }];
+            : [
+                {
+                  title: "",
+                  issuer: "",
+                  date: "",
+                  imageUrl: "",
+                  verificationUrl: "",
+                },
+              ];
         certs.forEach(function (c) {
           certListEl.appendChild(createCertRowElement(c));
         });
@@ -694,6 +856,7 @@
           profileInput && profileInput.value.trim()
             ? profileInput.value.trim()
             : "/assets/aistudio/Untitled_9d626b95.png",
+        connectionsPlaceholder: "[YOUR CONNECTIONS]",
         projects: {
           schoolManagement: schoolInput ? schoolInput.value.trim() : "",
           homeRenovation: homeInput ? homeInput.value.trim() : "",
@@ -701,7 +864,15 @@
         certificates:
           certs.length > 0
             ? certs
-            : [{ title: "", issuer: "", date: "", imageUrl: "", verificationUrl: "" }],
+            : [
+                {
+                  title: "",
+                  issuer: "",
+                  date: "",
+                  imageUrl: "",
+                  verificationUrl: "",
+                },
+              ],
       };
     }
 
@@ -723,7 +894,13 @@
     if (addCertBtn && certListEl) {
       addCertBtn.addEventListener("click", function () {
         certListEl.appendChild(
-          createCertRowElement({ title: "", issuer: "", date: "", imageUrl: "", verificationUrl: "" })
+          createCertRowElement({
+            title: "",
+            issuer: "",
+            date: "",
+            imageUrl: "",
+            verificationUrl: "",
+          })
         );
       });
     }
@@ -751,10 +928,20 @@
         }
         window.portfolioImages = {
           cvDocument: DEFAULT_RESUME_PDF_PATH,
-          cover: "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
+          cover:
+            "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
           profile: "/assets/aistudio/Untitled_9d626b95.png",
+          connectionsPlaceholder: "[YOUR CONNECTIONS]",
           projects: { schoolManagement: "", homeRenovation: "" },
-          certificates: [{ title: "", issuer: "", date: "", imageUrl: "", verificationUrl: "" }],
+          certificates: [
+            {
+              title: "",
+              issuer: "",
+              date: "",
+              imageUrl: "",
+              verificationUrl: "",
+            },
+          ],
         };
         hydratePortfolioImages();
         populateModalFromConfig();
@@ -768,16 +955,20 @@
           "/**\n" +
           " * CENTRALIZED DOCUMENT & IMAGE LINK SYSTEM — RIFATH AHAMED PORTFOLIO\n" +
           " */\n\n" +
+          "const isAdminMode = true;\n\n" +
           "const portfolioImages = " +
           JSON.stringify(cfg, null, 2) +
           ";\n\n" +
           'if (typeof window !== "undefined") {\n' +
+          "  window.isAdminMode = isAdminMode;\n" +
           "  window.portfolioImages = portfolioImages;\n" +
           "}\n\n" +
           'if (typeof module !== "undefined" && module.exports) {\n' +
-          "  module.exports = { portfolioImages };\n" +
+          "  module.exports = { portfolioImages, isAdminMode };\n" +
           "}\n";
-        var blob = new Blob([content], { type: "application/javascript;charset=utf-8" });
+        var blob = new Blob([content], {
+          type: "application/javascript;charset=utf-8",
+        });
         var url = URL.createObjectURL(blob);
         var a = document.createElement("a");
         a.href = url;
@@ -798,7 +989,9 @@
 
   function setupInteractions() {
     var downloadBtn = document.getElementById("download-cv-btn");
+    var mobileDownloadBtn = document.getElementById("mobile-download-cv-btn");
     var printBtn = document.getElementById("print-cv-btn");
+    var mobileMoreBtn = document.getElementById("mobile-more-actions-btn");
     var modal = document.getElementById("handshake-modal");
     var modalCard = document.getElementById("handshake-modal-card");
     var closeBtn = document.getElementById("handshake-modal-close");
@@ -849,6 +1042,13 @@
       });
     }
 
+    if (mobileDownloadBtn) {
+      mobileDownloadBtn.addEventListener("click", function (e) {
+        openHandshakePopup(e.currentTarget);
+        triggerPdfDownload();
+      });
+    }
+
     if (printBtn) {
       printBtn.addEventListener("click", function () {
         if (isPopupOpen) {
@@ -857,6 +1057,47 @@
         window.print();
       });
     }
+
+    if (mobileMoreBtn) {
+      mobileMoreBtn.addEventListener("click", function () {
+        if (isPopupOpen) {
+          closeHandshakePopup();
+        }
+        window.print();
+      });
+    }
+
+    // Smooth scrolling for all in-page section anchor links ("Hire me", "View my services", tablet nav)
+    var anchorLinks = document.querySelectorAll('a[href^="#"]');
+    anchorLinks.forEach(function (link) {
+      link.addEventListener("click", function (e) {
+        var href = link.getAttribute("href");
+        if (!href || href === "#") return;
+        var targetEl =
+          href === "#top"
+            ? document.body
+            : document.querySelector(href);
+        if (targetEl) {
+          e.preventDefault();
+          if (href === "#top") {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          } else {
+            targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+          if (window.history && typeof window.history.replaceState === "function") {
+            window.history.replaceState(null, "", href);
+          }
+        }
+        if (link.classList.contains("tablet-nav-link")) {
+          document.querySelectorAll(".tablet-nav-link").forEach(function (item) {
+            item.classList.remove("is-active");
+            item.removeAttribute("aria-current");
+          });
+          link.classList.add("is-active");
+          link.setAttribute("aria-current", "page");
+        }
+      });
+    });
 
     if (closeBtn) {
       closeBtn.addEventListener("click", function () {
@@ -880,15 +1121,16 @@
     });
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", function () {
-      hydratePortfolioImages();
-      setupInteractions();
-      setupMediaManagerModal();
-    });
-  } else {
+  function initPortfolioApp() {
     hydratePortfolioImages();
+    setupDummyEditModal();
     setupInteractions();
     setupMediaManagerModal();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPortfolioApp);
+  } else {
+    initPortfolioApp();
   }
 })();

@@ -10,6 +10,8 @@ export interface CertificateImageEntry {
 export type ProjectImageValue = string | string[];
 
 export interface PortfolioImagesConfig {
+  isAdminMode?: boolean;
+  connectionsPlaceholder?: string;
   cvDocument?: string;
   cover?: string;
   profile: string;
@@ -23,6 +25,17 @@ export interface PortfolioImagesConfig {
 
 export const POPUP_AUTO_CLOSE_MS = 4000;
 export const RESUME_PDF_PATH = '/assets/resume.pdf';
+export const DEFAULT_IS_ADMIN_MODE = true;
+export const DUMMY_EDIT_MODAL_MESSAGE =
+  'Editing will be available after the admin backend is connected';
+
+/**
+ * Formats the title for the reusable EditModal component.
+ */
+export function formatEditModalTitle(sectionName: string): string {
+  const cleaned = typeof sectionName === 'string' && sectionName.trim() ? sectionName.trim() : 'Section';
+  return `Edit ${cleaned}`;
+}
 
 /**
  * Checks whether the current URL query string unlocks the owner-only Files & Links manager (?edit=true).

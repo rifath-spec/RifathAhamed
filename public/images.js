@@ -1,22 +1,26 @@
 /**
- * CENTRALIZED DOCUMENT & IMAGE LINK SYSTEM — RIFATH AHAMED PORTFOLIO
- * ==================================================================
- * Edit the URLs below (or use the on-page "Files & Links" button) to update:
- * - cvDocument: Downloadable CV PDF link (Google Drive share link, HTTPS URL, or local path)
- * - cover: Hero cover banner image link
- * - profile: Circular profile photograph link
- * - projects: Screenshots for School Management System and Home Repair & Renovation Website
- * - certificates: Professional certificate images and document/verification links
- *
- * Rules & Capabilities:
- * 1. Supports HTTPS links, Google Drive share links (drive.google.com/file/d/...), or local relative paths.
- * 2. Leave any project or certificate field as "" if you do not want an image displayed yet.
- * 3. For projects, you can provide a single URL string OR an array of URL strings.
- * 4. For certificates, add as many certificate objects as needed. Any entry with
- *    an empty title ("") is automatically hidden on the published website.
+ * CENTRALIZED DOCUMENT, IMAGE & ADMIN CONFIGURATION — RIFATH AHAMED PORTFOLIO
+ * ===========================================================================
+ * Placeholders to customize:
+ * - isAdminMode: Set to true to display placeholder Edit buttons on all cards/headers,
+ *   or false to hide them for public visitors.
+ * - connectionsPlaceholder: Replace "[YOUR CONNECTIONS]" with your verified connection count (e.g. "500+ connections").
+ * - cvDocument: Downloadable CV PDF link (Google Drive share link, HTTPS URL, or local path).
+ * - cover: Hero cover banner image link (Google Drive share link or local path).
+ * - profile: Circular profile photograph link (Google Drive share link or local path).
+ * - projects: Screenshots for School Management System and Home Repair & Renovation Website.
+ * - certificates: Professional certificate images and document/verification links.
  */
 
+const isAdminMode = true;
+
 const portfolioImages = {
+  // Toggle dummy edit buttons across phone, tablet, and desktop
+  isAdminMode: isAdminMode,
+
+  // Placeholder for mobile LinkedIn connections line (replace with e.g. "500+ connections")
+  connectionsPlaceholder: "[YOUR CONNECTIONS]",
+
   // Downloadable CV / Resume PDF link (supports Google Drive file link or local path)
   cvDocument: "/assets/resume.pdf",
 
@@ -43,9 +47,10 @@ const portfolioImages = {
 };
 
 if (typeof window !== "undefined") {
+  window.isAdminMode = isAdminMode;
   window.portfolioImages = portfolioImages;
 }
 
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { portfolioImages };
+  module.exports = { isAdminMode, portfolioImages };
 }

@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  DEFAULT_IS_ADMIN_MODE,
+  DUMMY_EDIT_MODAL_MESSAGE,
+  formatEditModalTitle,
   isOwnerEditMode,
   extractGoogleDriveFileId,
   isValidImageUrl,
@@ -13,6 +16,16 @@ import {
   requestPopupOpen,
   POPUP_AUTO_CLOSE_MS,
 } from './portfolioLogic';
+
+test('formatEditModalTitle and DUMMY_EDIT_MODAL_MESSAGE match specification', () => {
+  assert.equal(DEFAULT_IS_ADMIN_MODE, true);
+  assert.equal(formatEditModalTitle('About'), 'Edit About');
+  assert.equal(formatEditModalTitle('Cover image'), 'Edit Cover image');
+  assert.equal(
+    DUMMY_EDIT_MODAL_MESSAGE,
+    'Editing will be available after the admin backend is connected'
+  );
+});
 
 test('isOwnerEditMode returns false for public URLs and true only when ?edit=true is present', () => {
   assert.equal(isOwnerEditMode(''), false);

@@ -61,7 +61,7 @@ export const ProtectedImage: React.FC<ProtectedImageProps> = ({
               fill="#12345A"
               fontSize="13"
               fontWeight="700"
-              fontFamily="Plus Jakarta Sans, Arial, sans-serif"
+              fontFamily="var(--font-ui)"
             >
               RA
             </text>

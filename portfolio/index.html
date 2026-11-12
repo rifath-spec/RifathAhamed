@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Rifath Ahamed | Administrative Assistant &amp; Office Operations Portfolio</title>
     <meta
       name="description"
@@ -29,16 +29,16 @@
       content="ADMINISTRATIVE ASSISTANT | OFFICE OPERATIONS | DOCUMENTATION &amp; IT SUPPORT — BSc in Management and Information Technology (Second Class Upper Honours, GPA 3.50/4.00)."
     />
 
-    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <!-- Google Fonts: Inter (400, 500, 600, 700) fallback for --font-ui -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
     <!-- Standalone Portfolio Stylesheet -->
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="/style.css" />
 
     <!-- Schema.org Structured Data (JSON-LD) -->
     <script type="application/ld+json">
@@ -64,54 +64,125 @@
       }
     </script>
   </head>
-  <body>
+  <body id="top">
+    <!-- ==============================================================
+         TABLET TOP NAVIGATION BAR (769px to 1024px)
+         Replaces the mobile bottom tab bar on tablet viewports
+         ============================================================== -->
+    <nav class="tablet-top-nav print-hidden" aria-label="Tablet navigation">
+      <div class="tablet-nav-brand">RIFATH AHAMED</div>
+      <div class="tablet-nav-links">
+        <a href="#top" class="tablet-nav-link is-active" aria-current="page">Home</a>
+        <a href="#projects" class="tablet-nav-link">Projects</a>
+        <a href="#core-competencies" class="tablet-nav-link">Services</a>
+        <a href="#contact-information" class="tablet-nav-link">Contact</a>
+      </div>
+    </nav>
+
     <div class="cv-page-shell">
       <main class="cv-document" id="cv-document">
         <!-- ==============================================================
-             LINKEDIN-STYLE HERO PROFILE CARD (COVER BANNER + CIRCULAR PHOTO)
+             LINKEDIN HERO PROFILE CARD (FIRST ELEMENT ON SCREEN)
+             Cover Banner (96px + safe-area-inset-top on mobile, 4:1 on desktop)
+             + Overlapping Circular Profile Photo (88px mobile / 190px desktop)
              ============================================================== -->
         <header class="linkedin-hero-card cv-header" aria-label="Curriculum Vitae Header">
-          <!-- Cover Photo Banner (Hydrated from portfolioImages.cover in images.js) -->
-          <div class="linkedin-cover-banner" id="cover-photo-slot" data-header-item="cover">
-            <div class="linkedin-cover-fallback" role="img" aria-label="Rifath Ahamed — Portfolio Cover Banner"></div>
+          <div class="linkedin-cover-wrapper">
+            <div class="linkedin-cover-banner" id="cover-photo-slot" data-header-item="cover">
+              <div
+                class="linkedin-cover-fallback"
+                role="img"
+                aria-label="Rifath Ahamed — Portfolio Cover Banner"
+              ></div>
+            </div>
           </div>
 
           <div class="linkedin-hero-body">
-            <!-- Overlapping Circular Profile Photograph -->
-            <div class="cv-photo-wrapper" id="profile-photo-slot" data-header-item="photo">
-              <div
-                class="profile-photo-frame profile-photo-placeholder"
-                role="img"
-                aria-label="RIFATH AHAMED — Professional Portrait"
-              >
-                <svg
-                  viewBox="0 0 130 130"
-                  width="100%"
-                  height="100%"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
+            <!-- Photo Row: Circular Photo (88px mobile / 190px desktop) + Right Edit Buttons -->
+            <div class="cv-photo-row">
+              <div class="cv-photo-wrapper" id="profile-photo-slot" data-header-item="photo">
+                <div
+                  class="profile-photo-frame profile-photo-placeholder"
+                  role="img"
+                  aria-label="RIFATH AHAMED — Professional Portrait"
                 >
-                  <rect width="130" height="130" fill="#F8FAFC" />
-                  <circle cx="65" cy="48" r="21" fill="#E2E8F0" stroke="#94A3B8" stroke-width="1.5" />
-                  <path
-                    d="M27 114C27 93.5655 43.5655 77 64 77H66C86.4345 77 103 93.5655 103 114V122H27V114Z"
-                    fill="#E2E8F0"
-                    stroke="#94A3B8"
-                    stroke-width="1.5"
-                  />
-                  <text
-                    x="65"
-                    y="53"
-                    text-anchor="middle"
-                    fill="#12345A"
-                    font-size="13"
-                    font-weight="700"
-                    font-family="Plus Jakarta Sans, Arial, sans-serif"
+                  <svg
+                    viewBox="0 0 130 130"
+                    width="100%"
+                    height="100%"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
                   >
-                    RA
-                  </text>
-                </svg>
+                    <rect width="130" height="130" fill="#F8FAFC" />
+                    <circle cx="65" cy="48" r="21" fill="#E2E8F0" stroke="#94A3B8" stroke-width="1.5" />
+                    <path
+                      d="M27 114C27 93.5655 43.5655 77 64 77H66C86.4345 77 103 93.5655 103 114V122H27V114Z"
+                      fill="#E2E8F0"
+                      stroke="#94A3B8"
+                      stroke-width="1.5"
+                    />
+                    <text
+                      x="65"
+                      y="53"
+                      text-anchor="middle"
+                      fill="#12345A"
+                      font-size="13"
+                      font-weight="700"
+                    >
+                      RA
+                    </text>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Right-aligned Edit Buttons level with the profile photo (Camera edits cover/photo, Pencil edits header) -->
+              <div class="cv-photo-actions-right print-hidden">
+                <button
+                  type="button"
+                  class="dummy-edit-btn"
+                  data-edit-section="Cover &amp; Profile Photo"
+                  aria-label="Edit cover image and profile photo"
+                  title="Edit cover image and profile photo"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                    <circle cx="12" cy="13" r="4" />
+                  </svg>
+                </button>
+
+                <button
+                  type="button"
+                  class="dummy-edit-btn"
+                  data-edit-section="Profile Header"
+                  aria-label="Edit profile header"
+                  title="Edit profile header"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                </button>
               </div>
             </div>
 
@@ -129,6 +200,17 @@
                   </p>
                 </div>
 
+                <!-- Mobile University, Location & Connections Placeholder -->
+                <div class="mobile-meta-block">
+                  <p class="mobile-uni-location-line">
+                    South Eastern University of Sri Lanka · Trincomalee, Sri Lanka
+                  </p>
+                  <p id="mobile-connections-placeholder" class="mobile-connections-line">
+                    [YOUR CONNECTIONS]
+                  </p>
+                </div>
+
+                <!-- Desktop & Tablet Contact Inline List -->
                 <div class="cv-header-contact" data-header-item="contact">
                   <div class="cv-contact-inline-list">
                     <span class="cv-contact-item">Trincomalee, Sri Lanka</span>
@@ -143,7 +225,60 @@
                   </div>
                 </div>
 
-                <!-- Primary Action Buttons -->
+                <!-- Mobile Action Row ("Hire me", "Download CV", "More actions", "View my services") -->
+                <div class="mobile-action-block print-hidden">
+                  <div class="mobile-action-primary-row">
+                    <a
+                      href="#contact-information"
+                      id="mobile-hire-me-btn"
+                      class="mobile-pill-btn mobile-pill-btn--primary"
+                    >
+                      <span>Hire me</span>
+                    </a>
+
+                    <button
+                      type="button"
+                      id="mobile-download-cv-btn"
+                      class="mobile-pill-btn mobile-pill-btn--outlined"
+                    >
+                      <span>Download CV</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      id="mobile-more-actions-btn"
+                      class="mobile-more-circle-btn"
+                      aria-label="More actions"
+                      title="Print or Save A4 PDF"
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <circle cx="12" cy="12" r="1.5" />
+                        <circle cx="19" cy="12" r="1.5" />
+                        <circle cx="5" cy="12" r="1.5" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <a
+                    href="#core-competencies"
+                    id="mobile-view-services-btn"
+                    class="mobile-pill-btn mobile-pill-btn--full"
+                  >
+                    <span>View my services</span>
+                  </a>
+                </div>
+
+                <!-- Desktop & Tablet Primary Action Buttons -->
                 <div class="cv-download-wrapper print-hidden" data-header-item="download-btn">
                   <button type="button" id="download-cv-btn" class="cv-download-btn">
                     <svg
@@ -218,7 +353,7 @@
                 </div>
               </div>
 
-              <!-- Right-Hand Institution Highlights (LinkedIn Style) -->
+              <!-- Right-Hand Institution Highlights (LinkedIn Desktop Style) -->
               <div class="linkedin-institutions-list" aria-label="Academic and Professional Affiliations">
                 <div class="linkedin-institution-badge">
                   <div class="linkedin-inst-icon" aria-hidden="true">SEU</div>
@@ -240,20 +375,47 @@
         </header>
 
         <!-- ==============================================================
-             TWO-COLUMN LINKEDIN FEED & SIDEBAR CARDS
+             TWO-COLUMN LINKEDIN FEED & SIDEBAR CARDS (8px STACK ON MOBILE)
+             Mobile order: About -> Services -> Projects -> Experience -> Education -> Other sections
              ============================================================== -->
         <div class="linkedin-two-col-grid">
-          <!-- LEFT MAIN FEED COLUMN (~68%) -->
+          <!-- LEFT MAIN FEED COLUMN (~68% on desktop) -->
           <div class="linkedin-feed-column">
-            <!-- 1. PROFESSIONAL SUMMARY -->
+            <!-- 1. ABOUT / PROFESSIONAL SUMMARY -->
             <section
               id="professional-summary"
               class="cv-section cv-section-card cv-summary-section"
               aria-labelledby="heading-summary"
             >
-              <h2 id="heading-summary" class="cv-section-heading">Professional Summary</h2>
+              <div class="cv-card-header-row">
+                <h2 id="heading-summary" class="cv-section-heading">
+                  <span class="mobile-heading-label">About</span>
+                  <span class="desktop-heading-label">Professional Summary</span>
+                </h2>
+                <button
+                  type="button"
+                  class="dummy-edit-btn print-hidden"
+                  data-edit-section="About"
+                  aria-label="Edit About"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                </button>
+              </div>
               <div class="cv-summary-content">
-                <p class="cv-body-paragraph">
+                <p class="cv-body-paragraph text-justify">
                   Detail-oriented Administrative and Office Support professional with a BSc in Management and Information Technology (Second Class Upper Honours, GPA 3.50/4.00) and practical experience in administrative coordination, financial record keeping, documentation, reporting and daily operations support. Proficient in Microsoft Office applications, particularly Excel, Word, Access and Outlook, with practical skills in data management, report preparation, database management and dashboard creation. Experienced in supporting transportation operations, employee attendance records, salary-related documentation and project administration. Possesses strong organizational, analytical and communication skills, with the ability to support efficient office operations.
                 </p>
               </div>
@@ -265,7 +427,34 @@
               class="cv-section cv-section-card"
               aria-labelledby="heading-experience"
             >
-              <h2 id="heading-experience" class="cv-section-heading">Work Experience</h2>
+              <div class="cv-card-header-row">
+                <h2 id="heading-experience" class="cv-section-heading">
+                  <span class="mobile-heading-label">Experience</span>
+                  <span class="desktop-heading-label">Work Experience</span>
+                </h2>
+                <button
+                  type="button"
+                  class="dummy-edit-btn print-hidden"
+                  data-edit-section="Experience"
+                  aria-label="Edit Experience"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                </button>
+              </div>
+
               <div class="cv-entries-list">
                 <!-- Role 1: 2025 Jay Jay Mills Lanka (Pvt) Ltd -->
                 <article class="cv-entry">
@@ -281,25 +470,25 @@
                       <span class="cv-entry-period">2025</span>
                     </div>
                     <ul class="cv-bullet-list">
-                      <li class="cv-bullet-item">
+                      <li class="cv-bullet-item text-justify">
                         Prepared and updated daily transportation schedules to support smooth business operations.
                       </li>
-                      <li class="cv-bullet-item">
+                      <li class="cv-bullet-item text-justify">
                         Coordinated staff transportation and communicated with HR and other departments.
                       </li>
-                      <li class="cv-bullet-item">
+                      <li class="cv-bullet-item text-justify">
                         Coordinated vehicle and driver activities to support timely transportation services.
                       </li>
-                      <li class="cv-bullet-item">
+                      <li class="cv-bullet-item text-justify">
                         Prepared transport reports and maintained accurate vehicle records.
                       </li>
-                      <li class="cv-bullet-item">
+                      <li class="cv-bullet-item text-justify">
                         Monitored vehicle-related expenses and maintained transportation information.
                       </li>
-                      <li class="cv-bullet-item">
+                      <li class="cv-bullet-item text-justify">
                         Checked vehicle maintenance schedules to support operational efficiency.
                       </li>
-                      <li class="cv-bullet-item">
+                      <li class="cv-bullet-item text-justify">
                         Used Microsoft Excel and internal company software for transport coordination and record management.
                       </li>
                     </ul>
@@ -320,22 +509,22 @@
                       <span class="cv-entry-period">2019–2021</span>
                     </div>
                     <ul class="cv-bullet-list">
-                      <li class="cv-bullet-item">
+                      <li class="cv-bullet-item text-justify">
                         Maintained financial records and updated business information using Microsoft Excel.
                       </li>
-                      <li class="cv-bullet-item">
+                      <li class="cv-bullet-item text-justify">
                         Checked bills, invoices and payment records to support accurate financial documentation.
                       </li>
-                      <li class="cv-bullet-item">
+                      <li class="cv-bullet-item text-justify">
                         Prepared daily reports and maintained organized project records.
                       </li>
-                      <li class="cv-bullet-item">
+                      <li class="cv-bullet-item text-justify">
                         Assisted with employee attendance records and salary-related documentation.
                       </li>
-                      <li class="cv-bullet-item">
+                      <li class="cv-bullet-item text-justify">
                         Monitored project activities and supported day-to-day administrative operations.
                       </li>
-                      <li class="cv-bullet-item">
+                      <li class="cv-bullet-item text-justify">
                         Coordinated administrative and financial information to support project management activities.
                       </li>
                     </ul>
@@ -350,7 +539,31 @@
               class="cv-section cv-section-card"
               aria-labelledby="heading-education"
             >
-              <h2 id="heading-education" class="cv-section-heading">Education</h2>
+              <div class="cv-card-header-row">
+                <h2 id="heading-education" class="cv-section-heading">Education</h2>
+                <button
+                  type="button"
+                  class="dummy-edit-btn print-hidden"
+                  data-edit-section="Education"
+                  aria-label="Edit Education"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                </button>
+              </div>
+
               <div class="cv-entries-list">
                 <article class="cv-entry">
                   <div class="linkedin-entry-logo" aria-hidden="true">SEU</div>
@@ -369,7 +582,7 @@
                       <span class="cv-meta-sep" aria-hidden="true">|</span>
                       <span class="cv-tabular-nums"><strong>GPA:</strong> 3.50/4.00</span>
                     </div>
-                    <p class="cv-education-detail-line">
+                    <p class="cv-education-detail-line text-justify">
                       <strong>Specialization:</strong> 60% Management, 40% Information Technology
                     </p>
                   </div>
@@ -392,15 +605,40 @@
               </div>
             </section>
 
-            <!-- 4. ACADEMIC & TECHNICAL PROJECTS -->
+            <!-- 4. PROJECTS / ACADEMIC & TECHNICAL PROJECTS -->
             <section
               id="projects"
               class="cv-section cv-section-card"
               aria-labelledby="heading-projects"
             >
-              <h2 id="heading-projects" class="cv-section-heading">
-                Academic &amp; Technical Projects
-              </h2>
+              <div class="cv-card-header-row">
+                <h2 id="heading-projects" class="cv-section-heading">
+                  <span class="mobile-heading-label">Projects</span>
+                  <span class="desktop-heading-label">Academic &amp; Technical Projects</span>
+                </h2>
+                <button
+                  type="button"
+                  class="dummy-edit-btn print-hidden"
+                  data-edit-section="Projects"
+                  aria-label="Edit Projects"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                </button>
+              </div>
+
               <div class="cv-entries-list">
                 <!-- Project 1: School Management System -->
                 <article class="cv-project-entry">
@@ -411,10 +649,10 @@
                       </div>
                     </div>
                     <ul class="cv-bullet-list">
-                      <li class="cv-bullet-item">
+                      <li class="cv-bullet-item text-justify">
                         Designed a relational database to manage student, teacher, course and guardian information.
                       </li>
-                      <li class="cv-bullet-item">
+                      <li class="cv-bullet-item text-justify">
                         Implemented data organization and administrative information management features.
                       </li>
                     </ul>
@@ -455,10 +693,10 @@
                       </div>
                     </div>
                     <ul class="cv-bullet-list">
-                      <li class="cv-bullet-item">
+                      <li class="cv-bullet-item text-justify">
                         Developed a web-based platform for renovation services, user registration and task tracking.
                       </li>
-                      <li class="cv-bullet-item">
+                      <li class="cv-bullet-item text-justify">
                         Worked on front-end design, back-end functionality and database integration.
                       </li>
                     </ul>
@@ -496,9 +734,33 @@
               class="cv-section cv-section-card"
               aria-labelledby="heading-certifications"
             >
-              <h2 id="heading-certifications" class="cv-section-heading">
-                Licenses &amp; Professional Certifications
-              </h2>
+              <div class="cv-card-header-row">
+                <h2 id="heading-certifications" class="cv-section-heading">
+                  Licenses &amp; Professional Certifications
+                </h2>
+                <button
+                  type="button"
+                  class="dummy-edit-btn print-hidden"
+                  data-edit-section="Certifications"
+                  aria-label="Edit Certifications"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                </button>
+              </div>
+
               <div class="cv-certification-verified-row">
                 <div class="cv-entry">
                   <div class="linkedin-entry-logo" aria-hidden="true">AAT</div>
@@ -521,15 +783,57 @@
             </section>
           </div>
 
-          <!-- RIGHT SIDEBAR COLUMN (~32%) -->
+          <!-- RIGHT SIDEBAR COLUMN (~32% on desktop) -->
           <aside class="linkedin-sidebar-column" aria-label="Skills, Competencies, and Contact Sidebar">
-            <!-- CORE COMPETENCIES -->
+            <!-- SERVICES / CORE COMPETENCIES (Rounded tag chips on mobile/tablet, bullet list on desktop) -->
             <section
               id="core-competencies"
               class="cv-section cv-section-card"
               aria-labelledby="heading-competencies"
             >
-              <h2 id="heading-competencies" class="cv-section-heading">Core Competencies</h2>
+              <div class="cv-card-header-row">
+                <h2 id="heading-competencies" class="cv-section-heading">
+                  <span class="mobile-heading-label">Services</span>
+                  <span class="desktop-heading-label">Core Competencies</span>
+                </h2>
+                <button
+                  type="button"
+                  class="dummy-edit-btn print-hidden"
+                  data-edit-section="Services"
+                  aria-label="Edit Services"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Rounded tag chips for mobile & tablet Services view -->
+              <ul class="services-chip-list" aria-label="Services and core competencies">
+                <li class="services-chip-item">Administrative &amp; Office Support</li>
+                <li class="services-chip-item">Document Management &amp; Record Keeping</li>
+                <li class="services-chip-item">Financial Records &amp; Invoice Checking</li>
+                <li class="services-chip-item">Data Entry &amp; Information Management</li>
+                <li class="services-chip-item">Report Preparation &amp; Documentation</li>
+                <li class="services-chip-item">Employee Attendance &amp; Payroll Documentation</li>
+                <li class="services-chip-item">Operations &amp; Staff Coordination</li>
+                <li class="services-chip-item">Scheduling &amp; Administrative Support</li>
+                <li class="services-chip-item">Microsoft Office &amp; Database Management</li>
+                <li class="services-chip-item">Project Documentation &amp; Monitoring</li>
+              </ul>
+
+              <!-- Existing desktop bullet list preserved for >=1025px -->
               <ul class="cv-competency-bullet-list">
                 <li class="cv-competency-bullet-item">Administrative &amp; Office Support</li>
                 <li class="cv-competency-bullet-item">Document Management &amp; Record Keeping</li>
@@ -550,9 +854,33 @@
               class="cv-section cv-section-card"
               aria-labelledby="heading-technical-skills"
             >
-              <h2 id="heading-technical-skills" class="cv-section-heading">
-                Technical &amp; Administrative Skills
-              </h2>
+              <div class="cv-card-header-row">
+                <h2 id="heading-technical-skills" class="cv-section-heading">
+                  Technical &amp; Administrative Skills
+                </h2>
+                <button
+                  type="button"
+                  class="dummy-edit-btn print-hidden"
+                  data-edit-section="Technical & Administrative Skills"
+                  aria-label="Edit Technical and Administrative Skills"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                </button>
+              </div>
+
               <div class="cv-skills-table">
                 <div class="cv-skill-row">
                   <div class="cv-skill-category">Microsoft Excel – Advanced</div>
@@ -604,7 +932,31 @@
               class="cv-section cv-section-card"
               aria-labelledby="heading-languages"
             >
-              <h2 id="heading-languages" class="cv-section-heading">Languages</h2>
+              <div class="cv-card-header-row">
+                <h2 id="heading-languages" class="cv-section-heading">Languages</h2>
+                <button
+                  type="button"
+                  class="dummy-edit-btn print-hidden"
+                  data-edit-section="Languages"
+                  aria-label="Edit Languages"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                </button>
+              </div>
+
               <div class="cv-languages-list">
                 <div class="cv-language-row">
                   <div class="cv-language-name">
@@ -635,7 +987,31 @@
               class="cv-section cv-section-card cv-contact-section"
               aria-labelledby="heading-contact"
             >
-              <h2 id="heading-contact" class="cv-section-heading">Contact Information</h2>
+              <div class="cv-card-header-row">
+                <h2 id="heading-contact" class="cv-section-heading">Contact Information</h2>
+                <button
+                  type="button"
+                  class="dummy-edit-btn print-hidden"
+                  data-edit-section="Contact details"
+                  aria-label="Edit Contact details"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                  </svg>
+                </button>
+              </div>
+
               <div class="cv-contact-grid">
                 <div class="cv-contact-row">
                   <span class="cv-contact-field-label">Full Name</span>
@@ -670,7 +1046,63 @@
       </main>
 
       <!-- ==============================================================
-           DOCUMENT & IMAGE LINK / UPLOAD MANAGER MODAL
+           REUSABLE DUMMY EDIT MODAL (EditModal Component)
+           ============================================================== -->
+      <div
+        id="dummy-edit-modal"
+        class="dummy-edit-modal-backdrop print-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dummy-edit-modal-title"
+        aria-describedby="dummy-edit-modal-body"
+        hidden
+      >
+        <div class="dummy-edit-modal-card">
+          <div class="dummy-edit-modal-header">
+            <h2 id="dummy-edit-modal-title" class="dummy-edit-modal-title">
+              Edit Section
+            </h2>
+            <button
+              type="button"
+              id="dummy-edit-modal-icon-close"
+              class="dummy-edit-modal-icon-close"
+              aria-label="Close edit modal"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+
+          <p id="dummy-edit-modal-body" class="dummy-edit-modal-body">
+            Editing will be available after the admin backend is connected
+          </p>
+
+          <div class="dummy-edit-modal-footer">
+            <button
+              type="button"
+              id="dummy-edit-modal-close"
+              class="dummy-edit-modal-close-btn"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================================================
+           DOCUMENT & IMAGE LINK / UPLOAD MANAGER MODAL (?edit=true)
            ============================================================== -->
       <div
         id="media-manager-modal"
@@ -714,7 +1146,6 @@
           </div>
 
           <div class="media-modal-body">
-            <!-- 1. CV PDF Document Link / Upload -->
             <div class="media-field-section">
               <h3 class="media-field-heading">1. Downloadable CV Document (PDF)</h3>
               <p class="media-field-hint">
@@ -739,7 +1170,6 @@
               </div>
             </div>
 
-            <!-- 2. Cover Banner Image -->
             <div class="media-field-section">
               <h3 class="media-field-heading">2. Cover Banner Photo</h3>
               <p class="media-field-hint">
@@ -764,7 +1194,6 @@
               </div>
             </div>
 
-            <!-- 3. Profile Photograph -->
             <div class="media-field-section">
               <h3 class="media-field-heading">3. Circular Profile Photograph</h3>
               <p class="media-field-hint">
@@ -789,7 +1218,6 @@
               </div>
             </div>
 
-            <!-- 4. Project Screenshots -->
             <div class="media-field-section">
               <h3 class="media-field-heading">4. Academic &amp; Technical Project Screenshots</h3>
               <p class="media-field-hint">
@@ -831,7 +1259,6 @@
               </div>
             </div>
 
-            <!-- 5. Professional Certificates & Document Links -->
             <div class="media-field-section">
               <div class="cv-entry-header">
                 <div>
@@ -865,7 +1292,7 @@
       </div>
 
       <!-- ==============================================================
-           ANIMATED HANDSHAKE THANK-YOU POPUP (SECTION 13)
+           ANIMATED HANDSHAKE THANK-YOU POPUP
            ============================================================== -->
       <div
         id="handshake-modal"
@@ -899,7 +1326,6 @@
             </svg>
           </button>
 
-          <!-- Animated Inline SVG Handshake Illustration (300–1200ms sequence) -->
           <div class="handshake-svg-container" aria-hidden="true">
             <svg
               class="handshake-svg"
@@ -977,7 +1403,7 @@
     </div>
 
     <!-- Centralized Image & Document Configuration & Vanilla JS Controller -->
-    <script src="images.js"></script>
-    <script src="script.js"></script>
+    <script src="/images.js"></script>
+    <script src="/script.js"></script>
   </body>
 </html>

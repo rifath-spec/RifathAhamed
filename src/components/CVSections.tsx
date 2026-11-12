@@ -28,7 +28,7 @@ export const CVSections: React.FC<CVSectionsProps> = ({ data, images }) => {
         </h2>
         <div className="cv-summary-content">
           {data.professionalSummary.map((paragraph, idx) => (
-            <p key={idx} className="cv-body-paragraph">
+            <p key={idx} className="cv-body-paragraph text-justify">
               {paragraph}
             </p>
           ))}
@@ -48,7 +48,7 @@ export const CVSections: React.FC<CVSectionsProps> = ({ data, images }) => {
           {data.coreCompetencies.map((comp) => (
             <div key={comp.title} className="cv-competency-item">
               <h3 className="cv-Subheading">{comp.title}</h3>
-              <p className="cv-secondary-text">{comp.description}</p>
+              <p className="cv-secondary-text text-justify">{comp.description}</p>
             </div>
           ))}
         </div>
@@ -76,10 +76,10 @@ export const CVSections: React.FC<CVSectionsProps> = ({ data, images }) => {
                 </div>
                 <span className="cv-entry-period">{job.period}</span>
               </div>
-              <p className="cv-entry-summary">{job.summary}</p>
+              <p className="cv-entry-summary text-justify">{job.summary}</p>
               <ul className="cv-bullet-list">
                 {job.responsibilities.map((bullet, idx) => (
-                  <li key={idx} className="cv-bullet-item">
+                  <li key={idx} className="cv-bullet-item text-justify">
                     {bullet}
                   </li>
                 ))}
@@ -122,19 +122,19 @@ export const CVSections: React.FC<CVSectionsProps> = ({ data, images }) => {
               </div>
 
               {edu.specialization && (
-                <p className="cv-education-detail-line">
+                <p className="cv-education-detail-line text-justify">
                   <strong>Specialization:</strong> {edu.specialization}
                 </p>
               )}
               {edu.finalYearProject && (
-                <p className="cv-education-detail-line">
+                <p className="cv-education-detail-line text-justify">
                   <strong>Academic &amp; Final-Year Project Work:</strong> {edu.finalYearProject}
                 </p>
               )}
 
               <ul className="cv-bullet-list">
                 {edu.details.map((line, idx) => (
-                  <li key={idx} className="cv-bullet-item">
+                  <li key={idx} className="cv-bullet-item text-justify">
                     {line}
                   </li>
                 ))}
@@ -173,11 +173,11 @@ export const CVSections: React.FC<CVSectionsProps> = ({ data, images }) => {
                     </div>
                   </div>
 
-                  <p className="cv-body-paragraph">{project.description}</p>
+                  <p className="cv-body-paragraph text-justify">{project.description}</p>
 
                   <ul className="cv-bullet-list">
                     {project.highlights.map((item, idx) => (
-                      <li key={idx} className="cv-bullet-item">
+                      <li key={idx} className="cv-bullet-item text-justify">
                         {item}
                       </li>
                     ))}
@@ -279,7 +279,7 @@ export const CVSections: React.FC<CVSectionsProps> = ({ data, images }) => {
           {data.professionalStrengths.map((item) => (
             <div key={item.title} className="cv-strength-item">
               <h3 className="cv-Subheading">{item.title}</h3>
-              <p className="cv-secondary-text">{item.detail}</p>
+              <p className="cv-secondary-text text-justify">{item.detail}</p>
             </div>
           ))}
         </div>
