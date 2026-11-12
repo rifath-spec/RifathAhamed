@@ -28,6 +28,14 @@ const portfolioImages = {
   cover: "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
   profile: "/assets/aistudio/Untitled_9d626b95.png",
 
+  // Organization & Institution Logos (Link-based image URLs or Google Drive share links)
+  logos: {
+    seu: "",
+    aat: "",
+    jjm: "",
+    gc: ""
+  },
+
   // Project Screenshots (single URL string or array of URLs)
   projects: {
     schoolManagement: "",

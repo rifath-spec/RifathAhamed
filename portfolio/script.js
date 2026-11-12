@@ -30,6 +30,7 @@
   var initialFallbacks = {
     cover: "",
     profile: "",
+    logos: {},
     projects: {},
   };
 
@@ -180,6 +181,7 @@
         "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
       profile: "/assets/aistudio/Untitled_9d626b95.png",
       connectionsPlaceholder: "[YOUR CONNECTIONS]",
+      logos: { seu: "", aat: "", jjm: "", gc: "" },
       projects: { schoolManagement: "", homeRenovation: "" },
       certificates: [],
     };
@@ -203,6 +205,24 @@
               : base.profile || "/assets/aistudio/Untitled_9d626b95.png",
           connectionsPlaceholder:
             base.connectionsPlaceholder || "[YOUR CONNECTIONS]",
+          logos: {
+            seu:
+              saved.logos && typeof saved.logos.seu === "string"
+                ? saved.logos.seu
+                : (base.logos && base.logos.seu) || "",
+            aat:
+              saved.logos && typeof saved.logos.aat === "string"
+                ? saved.logos.aat
+                : (base.logos && base.logos.aat) || "",
+            jjm:
+              saved.logos && typeof saved.logos.jjm === "string"
+                ? saved.logos.jjm
+                : (base.logos && base.logos.jjm) || "",
+            gc:
+              saved.logos && typeof saved.logos.gc === "string"
+                ? saved.logos.gc
+                : (base.logos && base.logos.gc) || "",
+          },
           projects: {
             schoolManagement:
               saved.projects &&
@@ -233,6 +253,12 @@
       profile: base.profile || "/assets/aistudio/Untitled_9d626b95.png",
       connectionsPlaceholder:
         base.connectionsPlaceholder || "[YOUR CONNECTIONS]",
+      logos: {
+        seu: (base.logos && base.logos.seu) || "",
+        aat: (base.logos && base.logos.aat) || "",
+        jjm: (base.logos && base.logos.jjm) || "",
+        gc: (base.logos && base.logos.gc) || "",
+      },
       projects: {
         schoolManagement:
           (base.projects && base.projects.schoolManagement) || "",
@@ -307,6 +333,13 @@
     if (profileHost && !initialFallbacks.profile) {
       initialFallbacks.profile = profileHost.innerHTML;
     }
+    var logoSlots = document.querySelectorAll("[data-org-logo]");
+    logoSlots.forEach(function (slot) {
+      var key = slot.getAttribute("data-org-logo");
+      if (key && !initialFallbacks.logos[key]) {
+        initialFallbacks.logos[key] = slot.innerHTML;
+      }
+    });
     var projectSlots = document.querySelectorAll("[data-project-image-key]");
     projectSlots.forEach(function (slot) {
       var key = slot.getAttribute("data-project-image-key");
@@ -369,6 +402,32 @@
         profileHost.innerHTML = initialFallbacks.profile;
       }
     }
+
+    // 1B. Organization & Institution Logo Slots (Header, Work Experience, Education, Certifications)
+    var logoSlots = document.querySelectorAll("[data-org-logo]");
+    logoSlots.forEach(function (slot) {
+      var key = slot.getAttribute("data-org-logo");
+      var orgName = slot.getAttribute("data-org-name") || key;
+      if (!key) return;
+      var fallbackSvgHtml = initialFallbacks.logos[key] || slot.innerHTML;
+      var logoUrl = config.logos && config.logos[key] ? config.logos[key] : "";
+      if (isValidImageUrl(logoUrl)) {
+        slot.innerHTML = "";
+        var logoNode = createProtectedImageElement({
+          src: normalizeImageUrl(logoUrl),
+          alt: orgName + " — Official Logo",
+          eager: true,
+          wrapperClass: "org-logo-img-wrapper",
+          imgClass: "org-logo-img",
+          onError: function () {
+            slot.innerHTML = fallbackSvgHtml;
+          },
+        });
+        slot.appendChild(logoNode);
+      } else {
+        slot.innerHTML = fallbackSvgHtml;
+      }
+    });
 
     // 2. Project Screenshot Slots
     var projectSlots = document.querySelectorAll("[data-project-image-key]");
@@ -622,11 +681,15 @@
 
   function setupMediaManagerModal() {
     var openBtn = document.getElementById("open-media-manager-btn");
+    var dummyOpenMediaBtn = document.getElementById(
+      "dummy-edit-open-media-btn"
+    );
+    var dummyModal = document.getElementById("dummy-edit-modal");
     var modal = document.getElementById("media-manager-modal");
     if (!modal || !openBtn) return;
 
-    // Strictly hide the Files & Links button from public visitors unless ?edit=true is in the URL
-    if (!isOwnerEditMode(window.location.search)) {
+    // Show the Files & Links button when Admin mode is enabled or ?edit=true is in the URL
+    if (!isAdminMode && !isOwnerEditMode(window.location.search)) {
       openBtn.setAttribute("hidden", "true");
       modal.setAttribute("hidden", "true");
       return;
@@ -644,6 +707,10 @@
     var cvDocInput = document.getElementById("input-cv-doc-url");
     var coverInput = document.getElementById("input-cover-url");
     var profileInput = document.getElementById("input-profile-url");
+    var logoSeuInput = document.getElementById("input-logo-seu-url");
+    var logoAatInput = document.getElementById("input-logo-aat-url");
+    var logoJjmInput = document.getElementById("input-logo-jjm-url");
+    var logoGcInput = document.getElementById("input-logo-gc-url");
     var schoolInput = document.getElementById("input-proj-school-url");
     var homeInput = document.getElementById("input-proj-home-url");
 
@@ -666,6 +733,10 @@
     bindFileToInput("upload-cv-doc-file", cvDocInput);
     bindFileToInput("upload-cover-file", coverInput);
     bindFileToInput("upload-profile-file", profileInput);
+    bindFileToInput("upload-logo-seu-file", logoSeuInput);
+    bindFileToInput("upload-logo-aat-file", logoAatInput);
+    bindFileToInput("upload-logo-jjm-file", logoJjmInput);
+    bindFileToInput("upload-logo-gc-file", logoGcInput);
     bindFileToInput("upload-proj-school-file", schoolInput);
     bindFileToInput("upload-proj-home-file", homeInput);
 
@@ -791,6 +862,18 @@
         profileInput.value =
           cfg.profile || "/assets/aistudio/Untitled_9d626b95.png";
       }
+      if (logoSeuInput) {
+        logoSeuInput.value = (cfg.logos && cfg.logos.seu) || "";
+      }
+      if (logoAatInput) {
+        logoAatInput.value = (cfg.logos && cfg.logos.aat) || "";
+      }
+      if (logoJjmInput) {
+        logoJjmInput.value = (cfg.logos && cfg.logos.jjm) || "";
+      }
+      if (logoGcInput) {
+        logoGcInput.value = (cfg.logos && cfg.logos.gc) || "";
+      }
       if (schoolInput) {
         schoolInput.value =
           (cfg.projects &&
@@ -857,6 +940,12 @@
             ? profileInput.value.trim()
             : "/assets/aistudio/Untitled_9d626b95.png",
         connectionsPlaceholder: "[YOUR CONNECTIONS]",
+        logos: {
+          seu: logoSeuInput ? logoSeuInput.value.trim() : "",
+          aat: logoAatInput ? logoAatInput.value.trim() : "",
+          jjm: logoJjmInput ? logoJjmInput.value.trim() : "",
+          gc: logoGcInput ? logoGcInput.value.trim() : "",
+        },
         projects: {
           schoolManagement: schoolInput ? schoolInput.value.trim() : "",
           homeRenovation: homeInput ? homeInput.value.trim() : "",
@@ -886,6 +975,14 @@
     }
 
     openBtn.addEventListener("click", openModal);
+    if (dummyOpenMediaBtn) {
+      dummyOpenMediaBtn.addEventListener("click", function () {
+        if (dummyModal) {
+          dummyModal.setAttribute("hidden", "true");
+        }
+        openModal();
+      });
+    }
     if (closeBtn) closeBtn.addEventListener("click", closeModal);
     modal.addEventListener("click", function (e) {
       if (e.target === modal) closeModal();
@@ -932,6 +1029,7 @@
             "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
           profile: "/assets/aistudio/Untitled_9d626b95.png",
           connectionsPlaceholder: "[YOUR CONNECTIONS]",
+          logos: { seu: "", aat: "", jjm: "", gc: "" },
           projects: { schoolManagement: "", homeRenovation: "" },
           certificates: [
             {
