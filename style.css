@@ -455,7 +455,8 @@ body {
   cursor: pointer;
 }
 
-.cv-media-btn[hidden] {
+.cv-media-btn[hidden],
+.cv-print-btn[hidden] {
   display: none !important;
 }
 
@@ -1884,6 +1885,46 @@ body {
   align-items: center;
 }
 
+.media-live-thumb {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--color-chip-border);
+  background-color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-muted-text);
+}
+
+.media-live-thumb--wide {
+  width: 68px;
+  min-width: 68px;
+}
+
+.media-live-thumb--circle {
+  border-radius: 50%;
+}
+
+.media-live-thumb img,
+.media-live-thumb svg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.media-live-thumb--wide img,
+.media-live-thumb--circle img {
+  object-fit: cover;
+}
+
 .media-text-input {
   flex: 1 1 240px;
   min-height: 44px;
@@ -2184,26 +2225,45 @@ body {
 
 /* ==========================================================================
    16. PRINT AND A4 PDF SUPPORT
+   Optimized for A4 portrait output so project screenshots, certificate grids,
+   and timeline entries stay organized and never split across page boundaries.
    ========================================================================== */
 
 @page {
-  size: A4;
-  margin: 1in;
+  size: A4 portrait;
+  margin: 14mm 16mm;
 }
 
 @media print {
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   html,
   body {
+    width: 100% !important;
+    max-width: 100% !important;
     background-color: #FFFFFF !important;
     color: #1F2937 !important;
-    font-size: 11pt;
+    font-size: 10.5pt;
     line-height: 1.45;
+    overflow: visible !important;
+  }
+
+  p,
+  li {
+    orphans: 3;
+    widows: 3;
   }
 
   .print-hidden,
   .tablet-top-nav,
   .mobile-bottom-tab-bar,
   .mobile-action-block,
+  .mobile-meta-block,
   .cv-download-wrapper,
   .linkedin-cover-wrapper,
   .dummy-edit-btn,
@@ -2213,8 +2273,17 @@ body {
     display: none !important;
   }
 
+  .mobile-heading-label {
+    display: none !important;
+  }
+
+  .desktop-heading-label {
+    display: inline !important;
+  }
+
   .cv-page-shell {
     padding: 0 !important;
+    margin: 0 !important;
     background-color: #FFFFFF !important;
     min-height: auto !important;
   }
@@ -2224,33 +2293,263 @@ body {
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    gap: 14px !important;
+    gap: 12px !important;
   }
 
-  .linkedin-hero-card,
-  .cv-section-card {
+  /* Header Layout in A4 Print */
+  .linkedin-hero-card {
     border: none !important;
+    border-bottom: 1.5px solid #CBD5E1 !important;
     box-shadow: none !important;
     padding: 0 0 12px 0 !important;
+    margin-bottom: 4px !important;
     border-radius: 0 !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .linkedin-hero-body {
+    padding: 0 !important;
+    display: grid !important;
+    grid-template-columns: 88px minmax(0, 1fr) !important;
+    column-gap: 18px !important;
+    align-items: center !important;
+  }
+
+  .cv-photo-row {
+    margin: 0 !important;
   }
 
   .cv-photo-wrapper {
-    width: 96px !important;
-    height: 96px !important;
+    width: 88px !important;
+    height: 88px !important;
     margin: 0 !important;
-    border: 1px solid #CBD5E1 !important;
+    border: 1.5px solid #CBD5E1 !important;
     box-shadow: none !important;
   }
 
-  .linkedin-two-col-grid {
-    display: block !important;
+  .linkedin-identity-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 235px !important;
+    gap: 14px !important;
+    align-items: start !important;
   }
 
-  .cv-entry,
-  .cv-project-entry,
-  .cv-certificate-item {
+  .cv-header-contact {
+    display: block !important;
+    margin-top: 4px !important;
+  }
+
+  .linkedin-institutions-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    border-top: none !important;
+    padding-top: 0 !important;
+  }
+
+  /* Main Feed & Sidebar Stack in Print */
+  .linkedin-two-col-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .linkedin-feed-column,
+  .linkedin-sidebar-column {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  #professional-summary,
+  #core-competencies,
+  #projects,
+  #work-experience,
+  #education,
+  #certifications,
+  #technical-skills,
+  #languages,
+  #contact-information {
+    order: initial !important;
+  }
+
+  .cv-section-card {
+    border: none !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    box-shadow: none !important;
+    padding: 0 0 12px 0 !important;
+    border-radius: 0 !important;
+    background-color: #FFFFFF !important;
+  }
+
+  /* Keep section headings attached to the first entry below them */
+  .cv-card-header-row,
+  .cv-section-heading,
+  .cv-entry-header {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .cv-card-header-row {
+    margin-bottom: 8px !important;
+    padding-bottom: 4px !important;
+    border-bottom: 1px solid #CBD5E1 !important;
+  }
+
+  .cv-section-heading {
+    font-size: 12.5pt !important;
+    font-weight: 700 !important;
+    color: #0B3B75 !important;
+  }
+
+  /* Keep individual sections that are compact together on a single page */
+  #professional-summary,
+  #education,
+  #projects,
+  #certifications,
+  #core-competencies,
+  #languages,
+  #contact-information {
     page-break-inside: avoid;
     break-inside: avoid;
+  }
+
+  /* Timeline, Skill, Language, and Contact Rows: never split mid-entry */
+  .cv-entry,
+  .cv-skill-row,
+  .cv-language-row,
+  .cv-contact-row,
+  .cv-certification-verified-row {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .cv-entry {
+    grid-template-columns: 40px minmax(0, 1fr) !important;
+    gap: 12px !important;
+    padding-bottom: 10px !important;
+  }
+
+  .linkedin-entry-logo {
+    width: 40px !important;
+    height: 40px !important;
+    box-shadow: none !important;
+  }
+
+  /* Project Entries & Project Screenshots: side-by-side, non-breaking in A4 PDF */
+  .cv-project-entry {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.55fr) minmax(185px, 0.85fr) !important;
+    gap: 14px !important;
+    align-items: start !important;
+    padding-bottom: 12px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .cv-project-text-column,
+  .cv-project-media-column,
+  .cv-project-screenshots-stack,
+  .cv-project-screenshot,
+  .project-preview-placeholder {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .cv-project-screenshots-stack {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .cv-project-screenshot {
+    max-height: 145px !important;
+    width: 100% !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
+    background-color: #F8FAFC !important;
+  }
+
+  .cv-project-screenshot img.protected-image {
+    max-height: 145px !important;
+    width: 100% !important;
+    object-fit: contain !important;
+    background-color: #F8FAFC !important;
+  }
+
+  .project-placeholder-body {
+    padding: 12px 10px !important;
+  }
+
+  /* Certificate Grid & Cards: 2-column organized grid, never split across pages */
+  .cv-certificates-gallery {
+    margin-top: 10px !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .cv-certificates-gallery[hidden] {
+    display: none !important;
+  }
+
+  .cv-certificate-item,
+  .cv-certificate-image-box,
+  .cv-certificate-preview,
+  .cv-certificate-meta {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .cv-certificate-item {
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 6px !important;
+    padding: 10px 12px !important;
+    background-color: #FFFFFF !important;
+    gap: 8px !important;
+  }
+
+  .cv-certificate-preview,
+  .cv-certificate-preview img.protected-image {
+    max-height: 135px !important;
+    width: 100% !important;
+    object-fit: contain !important;
+    background-color: #F8FAFC !important;
+  }
+
+  /* Compact 2-Column Competencies, Languages & Contact in Print */
+  .services-chip-list {
+    display: none !important;
+  }
+
+  .cv-competency-bullet-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 4px 20px !important;
+  }
+
+  .cv-skills-table {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px 20px !important;
+  }
+
+  .cv-languages-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px 20px !important;
+  }
+
+  .cv-contact-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px 20px !important;
   }
 }

@@ -204,7 +204,10 @@
               ? saved.profile
               : base.profile || "/assets/aistudio/Untitled_9d626b95.png",
           connectionsPlaceholder:
-            base.connectionsPlaceholder || "[YOUR CONNECTIONS]",
+            typeof saved.connectionsPlaceholder === "string" &&
+            saved.connectionsPlaceholder.trim()
+              ? saved.connectionsPlaceholder
+              : base.connectionsPlaceholder || "[YOUR CONNECTIONS]",
           logos: {
             seu:
               saved.logos && typeof saved.logos.seu === "string"
@@ -586,8 +589,8 @@
     var closeBtn = document.getElementById("dummy-edit-modal-close");
     var iconCloseBtn = document.getElementById("dummy-edit-modal-icon-close");
 
-    // Hide all dummy edit buttons if isAdminMode is switched off
-    if (!isAdminMode) {
+    // Hide all dummy edit buttons only when both isAdminMode and ?edit=true are inactive
+    if (!isAdminMode && !isOwnerEditMode(window.location.search)) {
       editButtons.forEach(function (btn) {
         btn.setAttribute("hidden", "true");
       });
@@ -603,6 +606,7 @@
         typeof sectionName === "string" && sectionName.trim()
           ? sectionName.trim()
           : "Section";
+      window.__lastDummyEditSection = cleanSection;
       titleEl.textContent = "Edit " + cleanSection;
       bodyEl.textContent = DUMMY_EDIT_MESSAGE;
       modal.removeAttribute("hidden");
@@ -688,14 +692,20 @@
     var modal = document.getElementById("media-manager-modal");
     if (!modal || !openBtn) return;
 
-    // Show the Files & Links button when Admin mode is enabled or ?edit=true is in the URL
-    if (!isAdminMode && !isOwnerEditMode(window.location.search)) {
+    // Strictly hide the Files & Links button and Media Manager from public visitors unless ?edit=true is in the URL
+    if (!isOwnerEditMode(window.location.search)) {
       openBtn.setAttribute("hidden", "true");
+      if (dummyOpenMediaBtn) {
+        dummyOpenMediaBtn.setAttribute("hidden", "true");
+      }
       modal.setAttribute("hidden", "true");
       return;
     }
 
     openBtn.removeAttribute("hidden");
+    if (dummyOpenMediaBtn) {
+      dummyOpenMediaBtn.removeAttribute("hidden");
+    }
 
     var closeBtn = document.getElementById("media-manager-close");
     var saveBtn = document.getElementById("save-media-links-btn");
@@ -705,6 +715,7 @@
     var certListEl = document.getElementById("cert-editor-list");
 
     var cvDocInput = document.getElementById("input-cv-doc-url");
+    var connectionsInput = document.getElementById("input-connections-text");
     var coverInput = document.getElementById("input-cover-url");
     var profileInput = document.getElementById("input-profile-url");
     var logoSeuInput = document.getElementById("input-logo-seu-url");
@@ -713,6 +724,92 @@
     var logoGcInput = document.getElementById("input-logo-gc-url");
     var schoolInput = document.getElementById("input-proj-school-url");
     var homeInput = document.getElementById("input-proj-home-url");
+
+    function updateThumbPreview(thumbId, rawUrl, fallbackHtml, labelText) {
+      var thumbEl = document.getElementById(thumbId);
+      if (!thumbEl) return;
+      var trimmed = typeof rawUrl === "string" ? rawUrl.trim() : "";
+      if (isValidImageUrl(trimmed)) {
+        thumbEl.innerHTML = "";
+        var img = document.createElement("img");
+        img.src = normalizeImageUrl(trimmed);
+        img.alt = (labelText || "Preview") + " thumbnail";
+        img.referrerPolicy = "no-referrer";
+        img.addEventListener("error", function () {
+          thumbEl.innerHTML = fallbackHtml || "<span>N/A</span>";
+        });
+        thumbEl.appendChild(img);
+      } else {
+        thumbEl.innerHTML = fallbackHtml || "<span>Default</span>";
+      }
+    }
+
+    function refreshAllAdminPreviews() {
+      captureInitialFallbacks();
+      updateThumbPreview(
+        "preview-thumb-cover",
+        coverInput ? coverInput.value : "",
+        "<span>Banner</span>",
+        "Cover banner"
+      );
+      updateThumbPreview(
+        "preview-thumb-profile",
+        profileInput ? profileInput.value : "",
+        initialFallbacks.profile,
+        "Profile photo"
+      );
+      updateThumbPreview(
+        "preview-thumb-logo-seu",
+        logoSeuInput ? logoSeuInput.value : "",
+        initialFallbacks.logos.seu,
+        "SEU logo"
+      );
+      updateThumbPreview(
+        "preview-thumb-logo-aat",
+        logoAatInput ? logoAatInput.value : "",
+        initialFallbacks.logos.aat,
+        "AAT logo"
+      );
+      updateThumbPreview(
+        "preview-thumb-logo-jjm",
+        logoJjmInput ? logoJjmInput.value : "",
+        initialFallbacks.logos.jjm,
+        "JJM logo"
+      );
+      updateThumbPreview(
+        "preview-thumb-logo-gc",
+        logoGcInput ? logoGcInput.value : "",
+        initialFallbacks.logos.gc,
+        "GC logo"
+      );
+      updateThumbPreview(
+        "preview-thumb-proj-school",
+        schoolInput ? schoolInput.value : "",
+        "<span>Preview</span>",
+        "School Management System"
+      );
+      updateThumbPreview(
+        "preview-thumb-proj-home",
+        homeInput ? homeInput.value : "",
+        "<span>Preview</span>",
+        "Home Repair Website"
+      );
+    }
+
+    [
+      coverInput,
+      profileInput,
+      logoSeuInput,
+      logoAatInput,
+      logoJjmInput,
+      logoGcInput,
+      schoolInput,
+      homeInput,
+    ].forEach(function (inp) {
+      if (inp) {
+        inp.addEventListener("input", refreshAllAdminPreviews);
+      }
+    });
 
     function bindFileToInput(fileInputId, textInputEl) {
       var fileInput = document.getElementById(fileInputId);
@@ -724,6 +821,7 @@
         reader.onload = function (ev) {
           if (ev.target && typeof ev.target.result === "string") {
             textInputEl.value = ev.target.result;
+            refreshAllAdminPreviews();
           }
         };
         reader.readAsDataURL(file);
@@ -853,6 +951,10 @@
       var cfg = getActiveConfig();
       if (cvDocInput)
         cvDocInput.value = cfg.cvDocument || DEFAULT_RESUME_PDF_PATH;
+      if (connectionsInput) {
+        connectionsInput.value =
+          cfg.connectionsPlaceholder || "[YOUR CONNECTIONS]";
+      }
       if (coverInput) {
         coverInput.value =
           cfg.cover ||
@@ -905,6 +1007,7 @@
           certListEl.appendChild(createCertRowElement(c));
         });
       }
+      refreshAllAdminPreviews();
     }
 
     function collectConfigFromModal() {
@@ -939,7 +1042,10 @@
           profileInput && profileInput.value.trim()
             ? profileInput.value.trim()
             : "/assets/aistudio/Untitled_9d626b95.png",
-        connectionsPlaceholder: "[YOUR CONNECTIONS]",
+        connectionsPlaceholder:
+          connectionsInput && connectionsInput.value.trim()
+            ? connectionsInput.value.trim()
+            : "[YOUR CONNECTIONS]",
         logos: {
           seu: logoSeuInput ? logoSeuInput.value.trim() : "",
           aat: logoAatInput ? logoAatInput.value.trim() : "",
@@ -965,22 +1071,45 @@
       };
     }
 
-    function openModal() {
+    function openModal(targetSectionId) {
       populateModalFromConfig();
       modal.removeAttribute("hidden");
+      if (typeof targetSectionId === "string" && targetSectionId) {
+        var secEl = document.getElementById(targetSectionId);
+        if (secEl && typeof secEl.scrollIntoView === "function") {
+          window.setTimeout(function () {
+            secEl.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 40);
+        }
+      }
     }
 
     function closeModal() {
       modal.setAttribute("hidden", "true");
     }
 
-    openBtn.addEventListener("click", openModal);
+    openBtn.addEventListener("click", function () {
+      openModal();
+    });
     if (dummyOpenMediaBtn) {
       dummyOpenMediaBtn.addEventListener("click", function () {
         if (dummyModal) {
           dummyModal.setAttribute("hidden", "true");
         }
-        openModal();
+        var lastSection = (window.__lastDummyEditSection || "").toLowerCase();
+        var targetId = "";
+        if (lastSection.indexOf("cover") !== -1 || lastSection.indexOf("photo") !== -1) {
+          targetId = "admin-section-cover";
+        } else if (lastSection.indexOf("experience") !== -1 || lastSection.indexOf("education") !== -1) {
+          targetId = "admin-section-logos";
+        } else if (lastSection.indexOf("project") !== -1) {
+          targetId = "admin-section-projects";
+        } else if (lastSection.indexOf("certification") !== -1) {
+          targetId = "admin-section-certificates";
+        } else {
+          targetId = "admin-section-cv";
+        }
+        openModal(targetId);
       });
     }
     if (closeBtn) closeBtn.addEventListener("click", closeModal);

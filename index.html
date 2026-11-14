@@ -191,7 +191,7 @@
               <div class="linkedin-identity-main">
                 <div class="cv-name-group" data-header-item="name">
                   <h1 class="cv-name">RIFATH AHAMED</h1>
-                  <span class="linkedin-verified-badge">· BSc in MIT (Hons)</span>
+                  <span class="linkedin-verified-badge">· Bachelor of Science in Management and Information Technology</span>
                 </div>
 
                 <div class="cv-designation-wrapper" data-header-item="designation">
@@ -1210,6 +1210,7 @@
               type="button"
               id="dummy-edit-open-media-btn"
               class="cv-print-btn"
+              hidden
             >
               Manage Image Links
             </button>
@@ -1269,8 +1270,8 @@
           </div>
 
           <div class="media-modal-body">
-            <div class="media-field-section">
-              <h3 class="media-field-heading">1. Downloadable CV Document (PDF)</h3>
+            <div class="media-field-section" id="admin-section-cv">
+              <h3 class="media-field-heading">1. Downloadable CV Document (PDF) &amp; Profile Metadata</h3>
               <p class="media-field-hint">
                 Supports Google Drive share link, direct HTTPS PDF link, local path (<code>/assets/resume.pdf</code>), or PDF upload.
               </p>
@@ -1291,14 +1292,23 @@
                   />
                 </label>
               </div>
+              <div class="media-input-row">
+                <input
+                  type="text"
+                  id="input-connections-text"
+                  class="media-text-input"
+                  placeholder="Connections text (e.g., 500+ connections or [YOUR CONNECTIONS])"
+                />
+              </div>
             </div>
 
-            <div class="media-field-section">
-              <h3 class="media-field-heading">2. Cover Banner Photo</h3>
+            <div class="media-field-section" id="admin-section-cover">
+              <h3 class="media-field-heading">2. Cover Banner Photo (Link-Based or Upload)</h3>
               <p class="media-field-hint">
                 Supports Google Drive image link, HTTPS image URL, local asset path, or direct image upload.
               </p>
               <div class="media-input-row">
+                <div class="media-live-thumb media-live-thumb--wide" id="preview-thumb-cover" title="Cover banner preview"></div>
                 <input
                   type="text"
                   id="input-cover-url"
@@ -1317,12 +1327,13 @@
               </div>
             </div>
 
-            <div class="media-field-section">
-              <h3 class="media-field-heading">3. Circular Profile Photograph</h3>
+            <div class="media-field-section" id="admin-section-profile">
+              <h3 class="media-field-heading">3. Circular Profile Photograph (Link-Based or Upload)</h3>
               <p class="media-field-hint">
                 Supports Google Drive image link, HTTPS image URL, local asset path, or direct portrait upload.
               </p>
               <div class="media-input-row">
+                <div class="media-live-thumb media-live-thumb--circle" id="preview-thumb-profile" title="Profile photo preview"></div>
                 <input
                   type="text"
                   id="input-profile-url"
@@ -1341,13 +1352,14 @@
               </div>
             </div>
 
-            <div class="media-field-section">
+            <div class="media-field-section" id="admin-section-logos">
               <h3 class="media-field-heading">4. Organization &amp; Institution Logos (Link-Based Image)</h3>
               <p class="media-field-hint">
                 Paste a Google Drive share link or direct HTTPS image URL for each university, institute, or company logo (leave empty to use the built-in emblem visualization).
               </p>
 
               <div class="media-input-row">
+                <div class="media-live-thumb" id="preview-thumb-logo-seu" title="SEU logo preview"></div>
                 <input
                   type="text"
                   id="input-logo-seu-url"
@@ -1366,6 +1378,7 @@
               </div>
 
               <div class="media-input-row">
+                <div class="media-live-thumb" id="preview-thumb-logo-aat" title="AAT logo preview"></div>
                 <input
                   type="text"
                   id="input-logo-aat-url"
@@ -1384,6 +1397,7 @@
               </div>
 
               <div class="media-input-row">
+                <div class="media-live-thumb" id="preview-thumb-logo-jjm" title="JJM logo preview"></div>
                 <input
                   type="text"
                   id="input-logo-jjm-url"
@@ -1402,6 +1416,7 @@
               </div>
 
               <div class="media-input-row">
+                <div class="media-live-thumb" id="preview-thumb-logo-gc" title="Grace Construction logo preview"></div>
                 <input
                   type="text"
                   id="input-logo-gc-url"
@@ -1420,12 +1435,13 @@
               </div>
             </div>
 
-            <div class="media-field-section">
+            <div class="media-field-section" id="admin-section-projects">
               <h3 class="media-field-heading">5. Academic &amp; Technical Project Screenshots</h3>
               <p class="media-field-hint">
                 Leave empty to keep the clean architectural preview card, or provide a link / upload a screenshot.
               </p>
               <div class="media-input-row">
+                <div class="media-live-thumb media-live-thumb--wide" id="preview-thumb-proj-school" title="School Management System screenshot preview"></div>
                 <input
                   type="text"
                   id="input-proj-school-url"
@@ -1443,6 +1459,7 @@
                 </label>
               </div>
               <div class="media-input-row">
+                <div class="media-live-thumb media-live-thumb--wide" id="preview-thumb-proj-home" title="Home Repair & Renovation Website screenshot preview"></div>
                 <input
                   type="text"
                   id="input-proj-home-url"
@@ -1461,7 +1478,7 @@
               </div>
             </div>
 
-            <div class="media-field-section">
+            <div class="media-field-section" id="admin-section-certificates">
               <div class="cv-entry-header">
                 <div>
                   <h3 class="media-field-heading">6. Certificates &amp; Credential Documents</h3>

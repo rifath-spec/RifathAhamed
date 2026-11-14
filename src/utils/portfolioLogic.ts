@@ -9,12 +9,21 @@ export interface CertificateImageEntry {
 
 export type ProjectImageValue = string | string[];
 
+export interface OrganizationLogosConfig {
+  seu: string;
+  aat: string;
+  jjm: string;
+  gc: string;
+  [key: string]: string;
+}
+
 export interface PortfolioImagesConfig {
   isAdminMode?: boolean;
   connectionsPlaceholder?: string;
   cvDocument?: string;
   cover?: string;
   profile: string;
+  logos?: OrganizationLogosConfig;
   projects: {
     schoolManagement: ProjectImageValue;
     homeRenovation: ProjectImageValue;

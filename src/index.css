@@ -1085,17 +1085,30 @@ body {
    ========================================================================== */
 
 @page {
-  size: A4;
-  margin: 1in;
+  size: A4 portrait;
+  margin: 14mm 16mm;
 }
 
 @media print {
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   html,
   body {
     background-color: #FFFFFF !important;
     color: #263238 !important;
-    font-size: 11pt;
+    font-size: 10.5pt;
     line-height: 1.45;
+  }
+
+  p,
+  li {
+    orphans: 3;
+    widows: 3;
   }
 
   .print-hidden,
@@ -1110,7 +1123,6 @@ body {
     min-height: auto !important;
   }
 
-  /* Avoid duplicating page margins since @page provides 1in margins */
   .cv-document {
     max-width: 100% !important;
     width: 100% !important;
@@ -1140,19 +1152,60 @@ body {
     grid-column: 2 !important;
   }
 
-  .cv-section-heading {
-    page-break-after: avoid;
-    break-after: avoid;
-    font-size: 13pt !important;
+  .cv-section-heading,
+  .cv-entry-header {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    font-size: 12.5pt !important;
   }
 
   .cv-entry,
   .cv-project-entry,
+  .cv-project-text-column,
+  .cv-project-media-column,
+  .cv-project-screenshots-stack,
+  .cv-project-screenshot,
+  .cv-certificates-gallery,
   .cv-certificate-item,
+  .cv-certificate-image-box,
+  .cv-certificate-preview,
   .cv-competency-item,
-  .cv-strength-item {
-    page-break-inside: avoid;
-    break-inside: avoid;
+  .cv-strength-item,
+  .cv-skill-row,
+  .cv-language-row,
+  .cv-contact-row {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .cv-project-entry {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.55fr) minmax(185px, 0.85fr) !important;
+    gap: 14px !important;
+    align-items: start !important;
+  }
+
+  .cv-project-screenshot,
+  .cv-project-screenshot img {
+    max-height: 145px !important;
+    width: 100% !important;
+    object-fit: contain !important;
+  }
+
+  .cv-certificates-gallery {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+  }
+
+  .cv-certificate-preview,
+  .cv-certificate-preview img {
+    max-height: 135px !important;
+    width: 100% !important;
+    object-fit: contain !important;
   }
 
   .cv-link {
