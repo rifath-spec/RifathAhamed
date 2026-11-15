@@ -1,0 +1,26 @@
+{
+  "isAdminMode": true,
+  "connectionsPlaceholder": "[YOUR CONNECTIONS]",
+  "cvDocument": "/assets/resume.pdf",
+  "cover": "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
+  "profile": "/assets/aistudio/Untitled_9d626b95.png",
+  "logos": {
+    "seu": "",
+    "aat": "",
+    "jjm": "",
+    "gc": ""
+  },
+  "projects": {
+    "schoolManagement": "",
+    "homeRenovation": ""
+  },
+  "certificates": [
+    {
+      "title": "",
+      "issuer": "",
+      "date": "",
+      "imageUrl": "",
+      "verificationUrl": ""
+    }
+  ]
+}

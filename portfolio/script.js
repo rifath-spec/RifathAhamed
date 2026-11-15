@@ -1,17 +1,22 @@
 /**
  * STANDALONE VANILLA JAVASCRIPT CONTROLLER — RIFATH AHAMED PORTFOLIO
  * ==================================================================
- * 1. Hydrates portfolioImages (from images.js + localStorage overrides) into the DOM.
- * 2. Powers the reusable EditButton & EditModal dummy placeholder system controlled
+ * 1. Hydrates portfolioImages (from portfolio-links.json + images.js) into the DOM
+ *    with zero localStorage dependency so desktop and mobile phones render identically on Vercel.
+ * 2. Powers the reusable EditButton & EditModal placeholder system controlled
  *    by the `isAdminMode` constant (set to `true` by default).
  * 3. Powers mobile action buttons ("Hire me", "Download CV", "More actions", "View my services"),
- *    bottom tab bar navigation, handshake thank-you modal, and owner (?edit=true) media manager.
+ *    bottom tab bar navigation, handshake thank-you modal, and owner (?edit=true)
+ *    Link Preview Inspector + Editable JSON Configuration Manager.
  */
 
 (function () {
   var POPUP_AUTO_CLOSE_MS = 4000;
   var DEFAULT_RESUME_PDF_PATH = "/assets/resume.pdf";
-  var STORAGE_KEY = "rifath_portfolio_media_v1";
+  var DEFAULT_COVER_PATH =
+    "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png";
+  var DEFAULT_PROFILE_PATH = "/assets/aistudio/Untitled_9d626b95.png";
+  var PORTFOLIO_JSON_PATH = "/portfolio-links.json";
   var DUMMY_EDIT_MESSAGE =
     "Editing will be available after the admin backend is connected";
 
@@ -52,10 +57,17 @@
     if (!trimmed) return null;
 
     var driveFileMatch = trimmed.match(
-      /^https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)(?:\/.*)?$/
+      /^https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)(?:\/.*|\?.*)?$/
     );
     if (driveFileMatch && driveFileMatch[1]) {
       return driveFileMatch[1];
+    }
+
+    var lh3Match = trimmed.match(
+      /^https:\/\/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)(?:\/.*|\?.*)?$/
+    );
+    if (lh3Match && lh3Match[1]) {
+      return lh3Match[1];
     }
 
     if (trimmed.indexOf("https://drive.google.com/") === 0) {
@@ -174,105 +186,158 @@
     return [];
   }
 
-  function getActiveConfig() {
-    var base = window.portfolioImages || {
-      cvDocument: DEFAULT_RESUME_PDF_PATH,
-      cover:
-        "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
-      profile: "/assets/aistudio/Untitled_9d626b95.png",
-      connectionsPlaceholder: "[YOUR CONNECTIONS]",
-      logos: { seu: "", aat: "", jjm: "", gc: "" },
-      projects: { schoolManagement: "", homeRenovation: "" },
-      certificates: [],
-    };
-    try {
-      var raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        var saved = JSON.parse(raw);
-        return {
-          cvDocument:
-            typeof saved.cvDocument === "string" && saved.cvDocument.trim()
-              ? saved.cvDocument
-              : base.cvDocument || DEFAULT_RESUME_PDF_PATH,
-          cover:
-            typeof saved.cover === "string" && saved.cover.trim()
-              ? saved.cover
-              : base.cover ||
-                "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
-          profile:
-            typeof saved.profile === "string" && saved.profile.trim()
-              ? saved.profile
-              : base.profile || "/assets/aistudio/Untitled_9d626b95.png",
-          connectionsPlaceholder:
-            typeof saved.connectionsPlaceholder === "string" &&
-            saved.connectionsPlaceholder.trim()
-              ? saved.connectionsPlaceholder
-              : base.connectionsPlaceholder || "[YOUR CONNECTIONS]",
-          logos: {
-            seu:
-              saved.logos && typeof saved.logos.seu === "string"
-                ? saved.logos.seu
-                : (base.logos && base.logos.seu) || "",
-            aat:
-              saved.logos && typeof saved.logos.aat === "string"
-                ? saved.logos.aat
-                : (base.logos && base.logos.aat) || "",
-            jjm:
-              saved.logos && typeof saved.logos.jjm === "string"
-                ? saved.logos.jjm
-                : (base.logos && base.logos.jjm) || "",
-            gc:
-              saved.logos && typeof saved.logos.gc === "string"
-                ? saved.logos.gc
-                : (base.logos && base.logos.gc) || "",
-          },
-          projects: {
-            schoolManagement:
-              saved.projects &&
-              typeof saved.projects.schoolManagement === "string"
-                ? saved.projects.schoolManagement
-                : (base.projects && base.projects.schoolManagement) || "",
-            homeRenovation:
-              saved.projects &&
-              typeof saved.projects.homeRenovation === "string"
-                ? saved.projects.homeRenovation
-                : (base.projects && base.projects.homeRenovation) || "",
-          },
-          certificates: Array.isArray(saved.certificates)
-            ? saved.certificates
-            : Array.isArray(base.certificates)
-            ? base.certificates
-            : [],
-        };
-      }
-    } catch (_err) {
-      // ignore storage errors
+  function sanitizeConfigObject(rawObj) {
+    var src = rawObj && typeof rawObj === "object" ? rawObj : {};
+    var logos = src.logos && typeof src.logos === "object" ? src.logos : {};
+    var projects =
+      src.projects && typeof src.projects === "object" ? src.projects : {};
+    var rawCerts = Array.isArray(src.certificates) ? src.certificates : [];
+
+    var cleanCerts = rawCerts.map(function (c) {
+      var item = c && typeof c === "object" ? c : {};
+      return {
+        title: typeof item.title === "string" ? item.title.trim() : "",
+        issuer: typeof item.issuer === "string" ? item.issuer.trim() : "",
+        date: typeof item.date === "string" ? item.date.trim() : "",
+        imageUrl: typeof item.imageUrl === "string" ? item.imageUrl.trim() : "",
+        verificationUrl:
+          typeof item.verificationUrl === "string"
+            ? item.verificationUrl.trim()
+            : "",
+        watermark: item.watermark !== false,
+      };
+    });
+
+    if (cleanCerts.length === 0) {
+      cleanCerts.push({
+        title: "",
+        issuer: "",
+        date: "",
+        imageUrl: "",
+        verificationUrl: "",
+        watermark: true,
+      });
     }
+
     return {
-      cvDocument: base.cvDocument || DEFAULT_RESUME_PDF_PATH,
-      cover:
-        base.cover ||
-        "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
-      profile: base.profile || "/assets/aistudio/Untitled_9d626b95.png",
+      isAdminMode:
+        typeof src.isAdminMode === "boolean" ? src.isAdminMode : isAdminMode,
       connectionsPlaceholder:
-        base.connectionsPlaceholder || "[YOUR CONNECTIONS]",
+        typeof src.connectionsPlaceholder === "string" &&
+        src.connectionsPlaceholder.trim()
+          ? src.connectionsPlaceholder.trim()
+          : "[YOUR CONNECTIONS]",
+      cvDocument:
+        typeof src.cvDocument === "string" && src.cvDocument.trim()
+          ? src.cvDocument.trim()
+          : DEFAULT_RESUME_PDF_PATH,
+      cover:
+        typeof src.cover === "string" && src.cover.trim()
+          ? src.cover.trim()
+          : DEFAULT_COVER_PATH,
+      profile:
+        typeof src.profile === "string" && src.profile.trim()
+          ? src.profile.trim()
+          : DEFAULT_PROFILE_PATH,
       logos: {
-        seu: (base.logos && base.logos.seu) || "",
-        aat: (base.logos && base.logos.aat) || "",
-        jjm: (base.logos && base.logos.jjm) || "",
-        gc: (base.logos && base.logos.gc) || "",
+        seu: typeof logos.seu === "string" ? logos.seu.trim() : "",
+        aat: typeof logos.aat === "string" ? logos.aat.trim() : "",
+        jjm: typeof logos.jjm === "string" ? logos.jjm.trim() : "",
+        gc: typeof logos.gc === "string" ? logos.gc.trim() : "",
       },
       projects: {
         schoolManagement:
-          (base.projects && base.projects.schoolManagement) || "",
-        homeRenovation: (base.projects && base.projects.homeRenovation) || "",
+          typeof projects.schoolManagement === "string"
+            ? projects.schoolManagement.trim()
+            : "",
+        homeRenovation:
+          typeof projects.homeRenovation === "string"
+            ? projects.homeRenovation.trim()
+            : "",
       },
-      certificates: Array.isArray(base.certificates) ? base.certificates : [],
+      certificates: cleanCerts,
     };
+  }
+
+  function getActiveConfig() {
+    return sanitizeConfigObject(window.portfolioImages || {});
+  }
+
+  function loadPortfolioLinksJson(onLoaded) {
+    if (typeof window.fetch !== "function") {
+      if (typeof onLoaded === "function") onLoaded();
+      return;
+    }
+    window
+      .fetch(PORTFOLIO_JSON_PATH, { cache: "no-store" })
+      .then(function (res) {
+        if (!res.ok) throw new Error("Failed to fetch portfolio-links.json");
+        return res.json();
+      })
+      .then(function (jsonConfig) {
+        if (jsonConfig && typeof jsonConfig === "object") {
+          var current = sanitizeConfigObject(window.portfolioImages || {});
+          var incoming = sanitizeConfigObject(jsonConfig);
+          // Merge non-empty values from portfolio-links.json into window.portfolioImages
+          window.portfolioImages = {
+            isAdminMode: incoming.isAdminMode,
+            connectionsPlaceholder:
+              incoming.connectionsPlaceholder || current.connectionsPlaceholder,
+            cvDocument: incoming.cvDocument || current.cvDocument,
+            cover: incoming.cover || current.cover,
+            profile: incoming.profile || current.profile,
+            logos: {
+              seu: incoming.logos.seu || current.logos.seu,
+              aat: incoming.logos.aat || current.logos.aat,
+              jjm: incoming.logos.jjm || current.logos.jjm,
+              gc: incoming.logos.gc || current.logos.gc,
+            },
+            projects: {
+              schoolManagement:
+                incoming.projects.schoolManagement ||
+                current.projects.schoolManagement,
+              homeRenovation:
+                incoming.projects.homeRenovation ||
+                current.projects.homeRenovation,
+            },
+            certificates:
+              Array.isArray(incoming.certificates) &&
+              incoming.certificates.length > 0
+                ? incoming.certificates
+                : current.certificates,
+          };
+          hydratePortfolioImages();
+        }
+        if (typeof onLoaded === "function") onLoaded();
+      })
+      .catch(function () {
+        if (typeof onLoaded === "function") onLoaded();
+      });
   }
 
   function preventContextAndDrag(e) {
     e.preventDefault();
+  }
+
+  function attachDriveImageFallback(img, rawUrl, onFinalError) {
+    var driveId = extractGoogleDriveFileId(rawUrl || img.src);
+    var stage = 0;
+    img.addEventListener("error", function () {
+      if (driveId && stage === 0) {
+        stage = 1;
+        img.src =
+          "https://drive.google.com/thumbnail?id=" + driveId + "&sz=w1600";
+        return;
+      }
+      if (driveId && stage === 1) {
+        stage = 2;
+        img.src = "https://drive.google.com/uc?export=view&id=" + driveId;
+        return;
+      }
+      if (typeof onFinalError === "function") {
+        onFinalError();
+      }
+    });
   }
 
   function createProtectedImageElement(options) {
@@ -293,23 +358,11 @@
     img.addEventListener("contextmenu", preventContextAndDrag);
     img.addEventListener("dragstart", preventContextAndDrag);
 
-    var triedDriveThumbnailFallback = false;
-    img.addEventListener("error", function () {
-      var ghMatch =
-        typeof img.src === "string" &&
-        img.src.match(
-          /^https:\/\/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)$/
-        );
-      if (ghMatch && ghMatch[1] && !triedDriveThumbnailFallback) {
-        triedDriveThumbnailFallback = true;
-        img.src =
-          "https://drive.google.com/thumbnail?id=" + ghMatch[1] + "&sz=w1600";
-        return;
-      }
-      if (typeof options.onError === "function") {
-        options.onError();
-      }
-    });
+    attachDriveImageFallback(
+      img,
+      options.rawUrl || options.src,
+      options.onError
+    );
 
     var shield = document.createElement("div");
     shield.className = "protected-image-shield";
@@ -356,7 +409,7 @@
     captureInitialFallbacks();
     var config = getActiveConfig();
 
-    // Update connections placeholder text if customized in images.js
+    // Update connections placeholder text if customized
     var connEl = document.getElementById("mobile-connections-placeholder");
     if (connEl && config.connectionsPlaceholder) {
       connEl.textContent = config.connectionsPlaceholder;
@@ -365,13 +418,12 @@
     // 0. Cover Banner Slot
     var coverHost = document.getElementById("cover-photo-slot");
     if (coverHost) {
-      var coverUrl =
-        config.cover ||
-        "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png";
+      var coverUrl = config.cover || DEFAULT_COVER_PATH;
       if (isValidImageUrl(coverUrl)) {
         coverHost.innerHTML = "";
         var coverNode = createProtectedImageElement({
           src: normalizeImageUrl(coverUrl),
+          rawUrl: coverUrl,
           alt: "Rifath Ahamed — Executive Portfolio Cover Banner",
           eager: true,
           wrapperClass: "linkedin-cover-img-wrapper",
@@ -393,6 +445,7 @@
         profileHost.innerHTML = "";
         var profileNode = createProtectedImageElement({
           src: normalizeImageUrl(config.profile),
+          rawUrl: config.profile,
           alt: "RIFATH AHAMED — Professional Portrait",
           eager: true,
           wrapperClass: "cv-profile-photo",
@@ -418,6 +471,7 @@
         slot.innerHTML = "";
         var logoNode = createProtectedImageElement({
           src: normalizeImageUrl(logoUrl),
+          rawUrl: logoUrl,
           alt: orgName + " — Official Logo",
           eager: true,
           wrapperClass: "org-logo-img-wrapper",
@@ -440,7 +494,8 @@
       if (!key) return;
 
       var defaultFrameHtml = initialFallbacks.projects[key] || slot.innerHTML;
-      var urls = resolveScreenshots(config.projects && config.projects[key]);
+      var rawVal = config.projects && config.projects[key];
+      var urls = resolveScreenshots(rawVal);
       if (urls.length > 0) {
         slot.innerHTML = "";
         var stack = document.createElement("div");
@@ -449,6 +504,7 @@
         urls.forEach(function (url, idx) {
           var shotNode = createProtectedImageElement({
             src: url,
+            rawUrl: typeof rawVal === "string" ? rawVal : url,
             alt: title + " — Screenshot " + (idx + 1),
             eager: false,
             wrapperClass: "cv-project-screenshot",
@@ -489,6 +545,7 @@
             imgBox.className = "cv-certificate-image-box";
             var certImg = createProtectedImageElement({
               src: normalizeImageUrl(cert.imageUrl),
+              rawUrl: cert.imageUrl,
               alt:
                 cert.title.trim() +
                 " — Issued by " +
@@ -576,10 +633,6 @@
 
   /**
    * REUSABLE DUMMY EDIT BUTTON & MODAL CONTROLLER (EditButton + EditModal)
-   * ======================================================================
-   * Placeholder behaviour: opens a modal titled "Edit [section name]" with the message
-   * "Editing will be available after the admin backend is connected" and a Close button.
-   * Traps focus inside the modal, closes on Escape, and returns focus to the triggering button.
    */
   function setupDummyEditModal() {
     var editButtons = document.querySelectorAll("[data-edit-section]");
@@ -589,7 +642,6 @@
     var closeBtn = document.getElementById("dummy-edit-modal-close");
     var iconCloseBtn = document.getElementById("dummy-edit-modal-icon-close");
 
-    // Hide all dummy edit buttons only when both isAdminMode and ?edit=true are inactive
     if (!isAdminMode && !isOwnerEditMode(window.location.search)) {
       editButtons.forEach(function (btn) {
         btn.setAttribute("hidden", "true");
@@ -654,7 +706,6 @@
       }
     });
 
-    // Focus trap and Escape key handling inside Dummy Edit Modal
     window.addEventListener("keydown", function (e) {
       if (modal.hasAttribute("hidden")) return;
 
@@ -683,6 +734,9 @@
     });
   }
 
+  /**
+   * OWNER (?edit=true) LINK PREVIEW INSPECTOR & JSON CONFIGURATION MANAGER
+   */
   function setupMediaManagerModal() {
     var openBtn = document.getElementById("open-media-manager-btn");
     var dummyOpenMediaBtn = document.getElementById(
@@ -725,6 +779,36 @@
     var schoolInput = document.getElementById("input-proj-school-url");
     var homeInput = document.getElementById("input-proj-home-url");
 
+    // Link Preview Inspector elements
+    var inspectorEl = document.getElementById("admin-link-inspector");
+    var inspectorContentEl = document.getElementById("inspector-content");
+    var inspectorTitleEl = document.getElementById("inspector-title");
+    var inspectorBadgeEl = document.getElementById("inspector-status-badge");
+    var inspectorVisualEl = document.getElementById("inspector-visual-box");
+    var inspectorRawUrlEl = document.getElementById("inspector-raw-url");
+    var inspectorResolvedUrlEl = document.getElementById(
+      "inspector-resolved-url"
+    );
+    var inspectorOpenLinkEl = document.getElementById(
+      "inspector-open-external"
+    );
+
+    // Editable JSON Configuration elements
+    var jsonTextarea = document.getElementById("admin-json-textarea");
+    var jsonStatusMsg = document.getElementById("admin-json-status-msg");
+    var importJsonFileInput = document.getElementById("import-json-file-input");
+    var applyJsonToFieldsBtn = document.getElementById(
+      "apply-json-to-fields-btn"
+    );
+    var copyJsonBtn = document.getElementById("copy-json-btn");
+
+    function setJsonStatus(message, isError) {
+      if (!jsonStatusMsg) return;
+      jsonStatusMsg.textContent = message;
+      jsonStatusMsg.style.color = isError ? "#991B1B" : "#166534";
+      jsonStatusMsg.style.fontWeight = "600";
+    }
+
     function updateThumbPreview(thumbId, rawUrl, fallbackHtml, labelText) {
       var thumbEl = document.getElementById(thumbId);
       if (!thumbEl) return;
@@ -735,13 +819,71 @@
         img.src = normalizeImageUrl(trimmed);
         img.alt = (labelText || "Preview") + " thumbnail";
         img.referrerPolicy = "no-referrer";
-        img.addEventListener("error", function () {
-          thumbEl.innerHTML = fallbackHtml || "<span>N/A</span>";
+        attachDriveImageFallback(img, trimmed, function () {
+          thumbEl.innerHTML = fallbackHtml || "<span>Error</span>";
         });
         thumbEl.appendChild(img);
       } else {
         thumbEl.innerHTML = fallbackHtml || "<span>Default</span>";
       }
+    }
+
+    function collectConfigFromModal() {
+      var certs = [];
+      if (certListEl) {
+        var rows = certListEl.querySelectorAll(".media-cert-row-card");
+        rows.forEach(function (r) {
+          var t = r.querySelector(".cert-title-input");
+          var i = r.querySelector(".cert-issuer-input");
+          var d = r.querySelector(".cert-date-input");
+          var img = r.querySelector(".cert-img-input");
+          var doc = r.querySelector(".cert-doc-input");
+          certs.push({
+            title: t ? t.value.trim() : "",
+            issuer: i ? i.value.trim() : "",
+            date: d ? d.value.trim() : "",
+            imageUrl: img ? img.value.trim() : "",
+            verificationUrl: doc ? doc.value.trim() : "",
+            watermark: true,
+          });
+        });
+      }
+      return sanitizeConfigObject({
+        isAdminMode: true,
+        cvDocument:
+          cvDocInput && cvDocInput.value.trim()
+            ? cvDocInput.value.trim()
+            : DEFAULT_RESUME_PDF_PATH,
+        cover:
+          coverInput && coverInput.value.trim()
+            ? coverInput.value.trim()
+            : DEFAULT_COVER_PATH,
+        profile:
+          profileInput && profileInput.value.trim()
+            ? profileInput.value.trim()
+            : DEFAULT_PROFILE_PATH,
+        connectionsPlaceholder:
+          connectionsInput && connectionsInput.value.trim()
+            ? connectionsInput.value.trim()
+            : "[YOUR CONNECTIONS]",
+        logos: {
+          seu: logoSeuInput ? logoSeuInput.value.trim() : "",
+          aat: logoAatInput ? logoAatInput.value.trim() : "",
+          jjm: logoJjmInput ? logoJjmInput.value.trim() : "",
+          gc: logoGcInput ? logoGcInput.value.trim() : "",
+        },
+        projects: {
+          schoolManagement: schoolInput ? schoolInput.value.trim() : "",
+          homeRenovation: homeInput ? homeInput.value.trim() : "",
+        },
+        certificates: certs,
+      });
+    }
+
+    function syncJsonTextareaFromFields() {
+      if (!jsonTextarea) return;
+      var currentCfg = collectConfigFromModal();
+      jsonTextarea.value = JSON.stringify(currentCfg, null, 2);
     }
 
     function refreshAllAdminPreviews() {
@@ -794,9 +936,157 @@
         "<span>Preview</span>",
         "Home Repair Website"
       );
+      syncJsonTextareaFromFields();
     }
 
+    function inspectLink(rawUrl, linkType, labelName) {
+      if (!inspectorEl) return;
+      var trimmed = typeof rawUrl === "string" ? rawUrl.trim() : "";
+      inspectorEl.removeAttribute("hidden");
+      if (inspectorContentEl) {
+        inspectorContentEl.removeAttribute("hidden");
+      }
+      if (inspectorTitleEl) {
+        inspectorTitleEl.textContent =
+          "Link Preview Inspector — " + (labelName || "Selected Link");
+      }
+      if (inspectorRawUrlEl) {
+        inspectorRawUrlEl.textContent =
+          trimmed || "(Empty — using built-in default)";
+      }
+
+      if (!trimmed) {
+        var fallbackResolved =
+          linkType === "document"
+            ? DEFAULT_RESUME_PDF_PATH
+            : "(Built-in SVG / Default Asset)";
+        if (inspectorResolvedUrlEl) {
+          inspectorResolvedUrlEl.textContent = fallbackResolved;
+        }
+        if (inspectorBadgeEl) {
+          inspectorBadgeEl.className = "media-status-badge is-warn";
+          inspectorBadgeEl.textContent = "Default Active";
+        }
+        if (inspectorVisualEl) {
+          inspectorVisualEl.innerHTML =
+            '<span class="cv-secondary-text">No custom URL entered. Built-in default visual is active.</span>';
+        }
+        if (inspectorOpenLinkEl) {
+          inspectorOpenLinkEl.href =
+            linkType === "document" ? DEFAULT_RESUME_PDF_PATH : "#";
+        }
+        inspectorEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        return;
+      }
+
+      if (linkType === "document") {
+        var resolvedDoc = normalizeDocumentUrl(trimmed);
+        if (inspectorResolvedUrlEl) {
+          inspectorResolvedUrlEl.textContent = resolvedDoc;
+        }
+        if (inspectorOpenLinkEl) {
+          inspectorOpenLinkEl.href = resolvedDoc;
+        }
+        if (isValidDocumentUrl(trimmed)) {
+          if (inspectorBadgeEl) {
+            inspectorBadgeEl.className = "media-status-badge is-ok";
+            inspectorBadgeEl.textContent = "Verified Document Link";
+          }
+          if (inspectorVisualEl) {
+            inspectorVisualEl.innerHTML =
+              '<div style="text-align:center;padding:10px;"><strong style="font-size:0.8125rem;display:block;margin-bottom:4px;">PDF / Document Ready</strong><span class="cv-secondary-text">Click "Open Resolved Link in New Tab" to test download.</span></div>';
+          }
+        } else {
+          if (inspectorBadgeEl) {
+            inspectorBadgeEl.className = "media-status-badge is-error";
+            inspectorBadgeEl.textContent = "Invalid HTTPS Link";
+          }
+          if (inspectorVisualEl) {
+            inspectorVisualEl.innerHTML =
+              '<span class="cv-secondary-text" style="color:#991B1B;">Use an https:// link or /assets/... path.</span>';
+          }
+        }
+        inspectorEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        return;
+      }
+
+      // Image preview flow
+      var resolvedImg = normalizeImageUrl(trimmed);
+      if (inspectorResolvedUrlEl) {
+        inspectorResolvedUrlEl.textContent = resolvedImg;
+      }
+      if (inspectorOpenLinkEl) {
+        inspectorOpenLinkEl.href = resolvedImg;
+      }
+
+      if (!isValidImageUrl(trimmed)) {
+        if (inspectorBadgeEl) {
+          inspectorBadgeEl.className = "media-status-badge is-error";
+          inspectorBadgeEl.textContent = "Invalid Image URL";
+        }
+        if (inspectorVisualEl) {
+          inspectorVisualEl.innerHTML =
+            '<span class="cv-secondary-text" style="color:#991B1B;">Must start with https:// or /assets/...</span>';
+        }
+        inspectorEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        return;
+      }
+
+      if (inspectorBadgeEl) {
+        inspectorBadgeEl.className = "media-status-badge is-warn";
+        inspectorBadgeEl.textContent = "Testing Image...";
+      }
+      if (inspectorVisualEl) {
+        inspectorVisualEl.innerHTML = "";
+        var testImg = document.createElement("img");
+        testImg.src = resolvedImg;
+        testImg.alt = (labelName || "Link") + " preview";
+        testImg.referrerPolicy = "no-referrer";
+        testImg.addEventListener("load", function () {
+          if (inspectorBadgeEl) {
+            inspectorBadgeEl.className = "media-status-badge is-ok";
+            inspectorBadgeEl.textContent =
+              "Verified (" +
+              (testImg.naturalWidth || 0) +
+              "×" +
+              (testImg.naturalHeight || 0) +
+              "px)";
+          }
+          if (inspectorResolvedUrlEl) {
+            inspectorResolvedUrlEl.textContent = testImg.src;
+          }
+          if (inspectorOpenLinkEl) {
+            inspectorOpenLinkEl.href = testImg.src;
+          }
+        });
+        attachDriveImageFallback(testImg, trimmed, function () {
+          if (inspectorBadgeEl) {
+            inspectorBadgeEl.className = "media-status-badge is-error";
+            inspectorBadgeEl.textContent = "Image Load Blocked / Private";
+          }
+          inspectorVisualEl.innerHTML =
+            '<span class="cv-secondary-text" style="color:#991B1B;text-align:center;">Could not load image. Ensure Google Drive file sharing is set to "Anyone with the link — Viewer".</span>';
+        });
+        inspectorVisualEl.appendChild(testImg);
+      }
+      inspectorEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    // Bind static "Preview Link" buttons
+    var previewButtons = modal.querySelectorAll("[data-preview-target]");
+    previewButtons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var targetId = btn.getAttribute("data-preview-target");
+        var linkType = btn.getAttribute("data-preview-type") || "image";
+        var labelName = btn.getAttribute("data-preview-label") || "Link";
+        var inputEl = targetId ? document.getElementById(targetId) : null;
+        inspectLink(inputEl ? inputEl.value : "", linkType, labelName);
+      });
+    });
+
     [
+      cvDocInput,
+      connectionsInput,
       coverInput,
       profileInput,
       logoSeuInput,
@@ -811,33 +1101,6 @@
       }
     });
 
-    function bindFileToInput(fileInputId, textInputEl) {
-      var fileInput = document.getElementById(fileInputId);
-      if (!fileInput || !textInputEl) return;
-      fileInput.addEventListener("change", function (e) {
-        var file = e.target.files && e.target.files[0];
-        if (!file) return;
-        var reader = new FileReader();
-        reader.onload = function (ev) {
-          if (ev.target && typeof ev.target.result === "string") {
-            textInputEl.value = ev.target.result;
-            refreshAllAdminPreviews();
-          }
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-
-    bindFileToInput("upload-cv-doc-file", cvDocInput);
-    bindFileToInput("upload-cover-file", coverInput);
-    bindFileToInput("upload-profile-file", profileInput);
-    bindFileToInput("upload-logo-seu-file", logoSeuInput);
-    bindFileToInput("upload-logo-aat-file", logoAatInput);
-    bindFileToInput("upload-logo-jjm-file", logoJjmInput);
-    bindFileToInput("upload-logo-gc-file", logoGcInput);
-    bindFileToInput("upload-proj-school-file", schoolInput);
-    bindFileToInput("upload-proj-home-file", homeInput);
-
     function createCertRowElement(certData) {
       var row = document.createElement("div");
       row.className = "media-cert-row-card";
@@ -850,18 +1113,21 @@
       titleInput.className = "media-text-input cert-title-input";
       titleInput.placeholder = "Certificate Title (e.g., AAT Sri Lanka)";
       titleInput.value = (certData && certData.title) || "";
+      titleInput.addEventListener("input", syncJsonTextareaFromFields);
 
       var issuerInput = document.createElement("input");
       issuerInput.type = "text";
       issuerInput.className = "media-text-input cert-issuer-input";
       issuerInput.placeholder = "Issuer (e.g., AAT Sri Lanka)";
       issuerInput.value = (certData && certData.issuer) || "";
+      issuerInput.addEventListener("input", syncJsonTextareaFromFields);
 
       var dateInput = document.createElement("input");
       dateInput.type = "text";
       dateInput.className = "media-text-input cert-date-input";
       dateInput.placeholder = "Year / Status (e.g., 2025)";
       dateInput.value = (certData && certData.date) || "";
+      dateInput.addEventListener("input", syncJsonTextareaFromFields);
 
       topGrid.appendChild(titleInput);
       topGrid.appendChild(issuerInput);
@@ -874,30 +1140,22 @@
       imgUrlInput.type = "text";
       imgUrlInput.className = "media-text-input cert-img-input";
       imgUrlInput.placeholder =
-        "Certificate Image Link (Google Drive or URL)";
+        "Certificate Image Link (Google Drive or Direct HTTPS URL)";
       imgUrlInput.value = (certData && certData.imageUrl) || "";
+      imgUrlInput.addEventListener("input", syncJsonTextareaFromFields);
 
-      var imgFileLabel = document.createElement("label");
-      imgFileLabel.className = "media-file-upload-label";
-      imgFileLabel.textContent = "Upload Image";
-      var imgFileInput = document.createElement("input");
-      imgFileInput.type = "file";
-      imgFileInput.accept = "image/*";
-      imgFileInput.className = "media-file-input-hidden";
-      imgFileInput.addEventListener("change", function (e) {
-        var f = e.target.files && e.target.files[0];
-        if (!f) return;
-        var r = new FileReader();
-        r.onload = function (ev) {
-          if (ev.target && typeof ev.target.result === "string") {
-            imgUrlInput.value = ev.target.result;
-          }
-        };
-        r.readAsDataURL(f);
+      var previewImgBtn = document.createElement("button");
+      previewImgBtn.type = "button";
+      previewImgBtn.className = "media-small-btn media-preview-btn";
+      previewImgBtn.textContent = "Preview Image";
+      previewImgBtn.addEventListener("click", function () {
+        var certLabel =
+          (titleInput.value && titleInput.value.trim()) || "Certificate Image";
+        inspectLink(imgUrlInput.value, "image", certLabel);
       });
-      imgFileLabel.appendChild(imgFileInput);
+
       imgRow.appendChild(imgUrlInput);
-      imgRow.appendChild(imgFileLabel);
+      imgRow.appendChild(previewImgBtn);
 
       var docRow = document.createElement("div");
       docRow.className = "media-input-row";
@@ -906,28 +1164,20 @@
       docUrlInput.type = "text";
       docUrlInput.className = "media-text-input cert-doc-input";
       docUrlInput.placeholder =
-        "Document / Verification Link (Google Drive PDF or URL)";
+        "Document / Verification Link (Google Drive PDF or HTTPS URL)";
       docUrlInput.value = (certData && certData.verificationUrl) || "";
+      docUrlInput.addEventListener("input", syncJsonTextareaFromFields);
 
-      var docFileLabel = document.createElement("label");
-      docFileLabel.className = "media-file-upload-label";
-      docFileLabel.textContent = "Upload PDF";
-      var docFileInput = document.createElement("input");
-      docFileInput.type = "file";
-      docFileInput.accept = ".pdf,application/pdf";
-      docFileInput.className = "media-file-input-hidden";
-      docFileInput.addEventListener("change", function (e) {
-        var f = e.target.files && e.target.files[0];
-        if (!f) return;
-        var r = new FileReader();
-        r.onload = function (ev) {
-          if (ev.target && typeof ev.target.result === "string") {
-            docUrlInput.value = ev.target.result;
-          }
-        };
-        r.readAsDataURL(f);
+      var previewDocBtn = document.createElement("button");
+      previewDocBtn.type = "button";
+      previewDocBtn.className = "media-small-btn media-preview-btn";
+      previewDocBtn.textContent = "Preview Doc";
+      previewDocBtn.addEventListener("click", function () {
+        var docLabel =
+          (titleInput.value && titleInput.value.trim()) ||
+          "Certificate Document";
+        inspectLink(docUrlInput.value, "document", docLabel);
       });
-      docFileLabel.appendChild(docFileInput);
 
       var removeBtn = document.createElement("button");
       removeBtn.type = "button";
@@ -935,10 +1185,11 @@
       removeBtn.textContent = "Remove";
       removeBtn.addEventListener("click", function () {
         if (row.parentNode) row.parentNode.removeChild(row);
+        syncJsonTextareaFromFields();
       });
 
       docRow.appendChild(docUrlInput);
-      docRow.appendChild(docFileLabel);
+      docRow.appendChild(previewDocBtn);
       docRow.appendChild(removeBtn);
 
       row.appendChild(topGrid);
@@ -947,8 +1198,10 @@
       return row;
     }
 
-    function populateModalFromConfig() {
-      var cfg = getActiveConfig();
+    function populateModalFromConfig(customCfg) {
+      var cfg = customCfg
+        ? sanitizeConfigObject(customCfg)
+        : getActiveConfig();
       if (cvDocInput)
         cvDocInput.value = cfg.cvDocument || DEFAULT_RESUME_PDF_PATH;
       if (connectionsInput) {
@@ -956,13 +1209,10 @@
           cfg.connectionsPlaceholder || "[YOUR CONNECTIONS]";
       }
       if (coverInput) {
-        coverInput.value =
-          cfg.cover ||
-          "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png";
+        coverInput.value = cfg.cover || DEFAULT_COVER_PATH;
       }
       if (profileInput) {
-        profileInput.value =
-          cfg.profile || "/assets/aistudio/Untitled_9d626b95.png";
+        profileInput.value = cfg.profile || DEFAULT_PROFILE_PATH;
       }
       if (logoSeuInput) {
         logoSeuInput.value = (cfg.logos && cfg.logos.seu) || "";
@@ -1010,65 +1260,104 @@
       refreshAllAdminPreviews();
     }
 
-    function collectConfigFromModal() {
-      var certs = [];
-      if (certListEl) {
-        var rows = certListEl.querySelectorAll(".media-cert-row-card");
-        rows.forEach(function (r) {
-          var t = r.querySelector(".cert-title-input");
-          var i = r.querySelector(".cert-issuer-input");
-          var d = r.querySelector(".cert-date-input");
-          var img = r.querySelector(".cert-img-input");
-          var doc = r.querySelector(".cert-doc-input");
-          certs.push({
-            title: t ? t.value.trim() : "",
-            issuer: i ? i.value.trim() : "",
-            date: d ? d.value.trim() : "",
-            imageUrl: img ? img.value.trim() : "",
-            verificationUrl: doc ? doc.value.trim() : "",
-          });
-        });
-      }
-      return {
-        cvDocument:
-          cvDocInput && cvDocInput.value.trim()
-            ? cvDocInput.value.trim()
-            : DEFAULT_RESUME_PDF_PATH,
-        cover:
-          coverInput && coverInput.value.trim()
-            ? coverInput.value.trim()
-            : "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
-        profile:
-          profileInput && profileInput.value.trim()
-            ? profileInput.value.trim()
-            : "/assets/aistudio/Untitled_9d626b95.png",
-        connectionsPlaceholder:
-          connectionsInput && connectionsInput.value.trim()
-            ? connectionsInput.value.trim()
-            : "[YOUR CONNECTIONS]",
-        logos: {
-          seu: logoSeuInput ? logoSeuInput.value.trim() : "",
-          aat: logoAatInput ? logoAatInput.value.trim() : "",
-          jjm: logoJjmInput ? logoJjmInput.value.trim() : "",
-          gc: logoGcInput ? logoGcInput.value.trim() : "",
-        },
-        projects: {
-          schoolManagement: schoolInput ? schoolInput.value.trim() : "",
-          homeRenovation: homeInput ? homeInput.value.trim() : "",
-        },
-        certificates:
-          certs.length > 0
-            ? certs
-            : [
-                {
-                  title: "",
-                  issuer: "",
-                  date: "",
-                  imageUrl: "",
-                  verificationUrl: "",
-                },
-              ],
-      };
+    // Two-way JSON editing: Load edited JSON from textarea into fields and live page
+    if (applyJsonToFieldsBtn && jsonTextarea) {
+      applyJsonToFieldsBtn.addEventListener("click", function () {
+        try {
+          var parsed = JSON.parse(jsonTextarea.value);
+          var clean = sanitizeConfigObject(parsed);
+          window.portfolioImages = clean;
+          populateModalFromConfig(clean);
+          hydratePortfolioImages();
+          setJsonStatus(
+            "Loaded edited JSON into all fields and updated live portfolio preview.",
+            false
+          );
+        } catch (err) {
+          setJsonStatus(
+            "Invalid JSON syntax: " +
+              (err && err.message ? err.message : "check brackets/quotes"),
+            true
+          );
+        }
+      });
+    }
+
+    // Import JSON file (.json) into fields and live preview
+    if (importJsonFileInput) {
+      importJsonFileInput.addEventListener("change", function (e) {
+        var file = e.target.files && e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+          try {
+            var rawText =
+              ev.target && typeof ev.target.result === "string"
+                ? ev.target.result
+                : "";
+            var parsed = JSON.parse(rawText);
+            var clean = sanitizeConfigObject(parsed);
+            window.portfolioImages = clean;
+            populateModalFromConfig(clean);
+            hydratePortfolioImages();
+            setJsonStatus(
+              "Imported " +
+                file.name +
+                " into all fields and updated live preview.",
+              false
+            );
+          } catch (_err) {
+            setJsonStatus(
+              "Could not parse JSON file. Ensure it is valid JSON.",
+              true
+            );
+          }
+        };
+        reader.readAsText(file);
+      });
+    }
+
+    if (copyJsonBtn && jsonTextarea) {
+      copyJsonBtn.addEventListener("click", function () {
+        syncJsonTextareaFromFields();
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard
+            .writeText(jsonTextarea.value)
+            .then(function () {
+              setJsonStatus(
+                "Copied portfolio-links.json to clipboard.",
+                false
+              );
+            })
+            .catch(function () {
+              jsonTextarea.select();
+              document.execCommand("copy");
+              setJsonStatus(
+                "Copied portfolio-links.json to clipboard.",
+                false
+              );
+            });
+        } else {
+          jsonTextarea.select();
+          document.execCommand("copy");
+          setJsonStatus("Copied portfolio-links.json to clipboard.", false);
+        }
+      });
+    }
+
+    function downloadJsonFile(configObj) {
+      var jsonString = JSON.stringify(configObj, null, 2) + "\n";
+      var blob = new Blob([jsonString], {
+        type: "application/json;charset=utf-8",
+      });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "portfolio-links.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
 
     function openModal(targetSectionId) {
@@ -1098,9 +1387,15 @@
         }
         var lastSection = (window.__lastDummyEditSection || "").toLowerCase();
         var targetId = "";
-        if (lastSection.indexOf("cover") !== -1 || lastSection.indexOf("photo") !== -1) {
+        if (
+          lastSection.indexOf("cover") !== -1 ||
+          lastSection.indexOf("photo") !== -1
+        ) {
           targetId = "admin-section-cover";
-        } else if (lastSection.indexOf("experience") !== -1 || lastSection.indexOf("education") !== -1) {
+        } else if (
+          lastSection.indexOf("experience") !== -1 ||
+          lastSection.indexOf("education") !== -1
+        ) {
           targetId = "admin-section-logos";
         } else if (lastSection.indexOf("project") !== -1) {
           targetId = "admin-section-projects";
@@ -1128,6 +1423,7 @@
             verificationUrl: "",
           })
         );
+        syncJsonTextareaFromFields();
       });
     }
 
@@ -1135,28 +1431,23 @@
       saveBtn.addEventListener("click", function () {
         var updated = collectConfigFromModal();
         window.portfolioImages = updated;
-        try {
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-        } catch (_err) {
-          // ignore storage quota errors
-        }
+        syncJsonTextareaFromFields();
         hydratePortfolioImages();
-        closeModal();
+        downloadJsonFile(updated);
+        setJsonStatus(
+          "Applied live & downloaded portfolio-links.json. Commit portfolio-links.json to deploy on Vercel.",
+          false
+        );
       });
     }
 
     if (resetBtn) {
       resetBtn.addEventListener("click", function () {
-        try {
-          window.localStorage.removeItem(STORAGE_KEY);
-        } catch (_err) {
-          // ignore
-        }
-        window.portfolioImages = {
+        window.portfolioImages = sanitizeConfigObject({
+          isAdminMode: true,
           cvDocument: DEFAULT_RESUME_PDF_PATH,
-          cover:
-            "/assets/aistudio/Professional_Yellow_Gradient_LinkedIn_Banner_139b06ae.png",
-          profile: "/assets/aistudio/Untitled_9d626b95.png",
+          cover: DEFAULT_COVER_PATH,
+          profile: DEFAULT_PROFILE_PATH,
           connectionsPlaceholder: "[YOUR CONNECTIONS]",
           logos: { seu: "", aat: "", jjm: "", gc: "" },
           projects: { schoolManagement: "", homeRenovation: "" },
@@ -1169,15 +1460,18 @@
               verificationUrl: "",
             },
           ],
-        };
+        });
         hydratePortfolioImages();
         populateModalFromConfig();
+        setJsonStatus("Reset all fields to built-in defaults.", false);
       });
     }
 
     if (exportBtn) {
       exportBtn.addEventListener("click", function () {
         var cfg = collectConfigFromModal();
+        window.portfolioImages = cfg;
+        hydratePortfolioImages();
         var content =
           "/**\n" +
           " * CENTRALIZED DOCUMENT & IMAGE LINK SYSTEM — RIFATH AHAMED PORTFOLIO\n" +
@@ -1301,9 +1595,7 @@
         var href = link.getAttribute("href");
         if (!href || href === "#") return;
         var targetEl =
-          href === "#top"
-            ? document.body
-            : document.querySelector(href);
+          href === "#top" ? document.body : document.querySelector(href);
         if (targetEl) {
           e.preventDefault();
           if (href === "#top") {
@@ -1311,15 +1603,20 @@
           } else {
             targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
           }
-          if (window.history && typeof window.history.replaceState === "function") {
+          if (
+            window.history &&
+            typeof window.history.replaceState === "function"
+          ) {
             window.history.replaceState(null, "", href);
           }
         }
         if (link.classList.contains("tablet-nav-link")) {
-          document.querySelectorAll(".tablet-nav-link").forEach(function (item) {
-            item.classList.remove("is-active");
-            item.removeAttribute("aria-current");
-          });
+          document
+            .querySelectorAll(".tablet-nav-link")
+            .forEach(function (item) {
+              item.classList.remove("is-active");
+              item.removeAttribute("aria-current");
+            });
           link.classList.add("is-active");
           link.setAttribute("aria-current", "page");
         }
@@ -1353,6 +1650,7 @@
     setupDummyEditModal();
     setupInteractions();
     setupMediaManagerModal();
+    loadPortfolioLinksJson();
   }
 
   if (document.readyState === "loading") {

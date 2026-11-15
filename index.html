@@ -1226,7 +1226,7 @@
       </div>
 
       <!-- ==============================================================
-           DOCUMENT & IMAGE LINK / UPLOAD MANAGER MODAL (?edit=true or Admin)
+           DOCUMENT & IMAGE LINK / JSON MANAGER MODAL (?edit=true)
            ============================================================== -->
       <div
         id="media-manager-modal"
@@ -1240,10 +1240,10 @@
           <div class="media-modal-header">
             <div>
               <h2 id="media-manager-title" class="media-modal-title">
-                Manage Document &amp; Image Links
+                Manage Site Links &amp; JSON Configuration (<code>portfolio-links.json</code>)
               </h2>
               <p class="media-modal-subtitle">
-                Paste a URL / Google Drive share link or upload a file directly for your CV PDF, photos, organization logos, projects, and certificates.
+                All links are stored in JSON (no browser-only <code>localStorage</code>) so every photo, logo, project screenshot, and certificate renders identically on mobile phones and desktop after hosting on Vercel.
               </p>
             </div>
             <button
@@ -1270,10 +1270,47 @@
           </div>
 
           <div class="media-modal-body">
+            <!-- LIVE LINK PREVIEW INSPECTOR -->
+            <div class="media-field-section media-link-inspector" id="admin-link-inspector">
+              <div class="media-inspector-header">
+                <div>
+                  <h3 class="media-field-heading" id="inspector-title">Link Preview Inspector</h3>
+                  <p class="media-field-hint" id="inspector-subtitle">
+                    Click &ldquo;Preview Link&rdquo; next to any field below to verify how it renders on desktop and mobile phones. For Google Drive links, set sharing to &ldquo;Anyone with the link (Viewer)&rdquo;.
+                  </p>
+                </div>
+                <span class="media-status-badge" id="inspector-status-badge">Ready</span>
+              </div>
+              <div class="media-inspector-content" id="inspector-content" hidden>
+                <div class="media-inspector-visual" id="inspector-visual-box"></div>
+                <div class="media-inspector-meta">
+                  <div class="media-inspector-row">
+                    <span class="media-inspector-label">Entered Link:</span>
+                    <code class="media-inspector-code" id="inspector-raw-url">—</code>
+                  </div>
+                  <div class="media-inspector-row">
+                    <span class="media-inspector-label">Resolved Direct Link:</span>
+                    <code class="media-inspector-code" id="inspector-resolved-url">—</code>
+                  </div>
+                  <div class="media-inspector-actions">
+                    <a
+                      href="#"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      id="inspector-open-external"
+                      class="cv-link"
+                    >
+                      Open Resolved Link in New Tab
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="media-field-section" id="admin-section-cv">
               <h3 class="media-field-heading">1. Downloadable CV Document (PDF) &amp; Profile Metadata</h3>
               <p class="media-field-hint">
-                Supports Google Drive share link, direct HTTPS PDF link, local path (<code>/assets/resume.pdf</code>), or PDF upload.
+                Paste a Google Drive PDF share link, direct HTTPS PDF link, or repo path (<code>/assets/resume.pdf</code>).
               </p>
               <div class="media-input-row">
                 <input
@@ -1282,15 +1319,15 @@
                   class="media-text-input"
                   placeholder="https://drive.google.com/file/d/... or /assets/resume.pdf"
                 />
-                <label class="media-file-upload-label">
-                  <span>Upload PDF</span>
-                  <input
-                    type="file"
-                    id="upload-cv-doc-file"
-                    accept=".pdf,application/pdf"
-                    class="media-file-input-hidden"
-                  />
-                </label>
+                <button
+                  type="button"
+                  class="media-small-btn media-preview-btn"
+                  data-preview-target="input-cv-doc-url"
+                  data-preview-type="document"
+                  data-preview-label="Downloadable CV PDF"
+                >
+                  Preview Link
+                </button>
               </div>
               <div class="media-input-row">
                 <input
@@ -1303,9 +1340,9 @@
             </div>
 
             <div class="media-field-section" id="admin-section-cover">
-              <h3 class="media-field-heading">2. Cover Banner Photo (Link-Based or Upload)</h3>
+              <h3 class="media-field-heading">2. Cover Banner Photo (Link-Based Image)</h3>
               <p class="media-field-hint">
-                Supports Google Drive image link, HTTPS image URL, local asset path, or direct image upload.
+                Paste a Google Drive share link, direct HTTPS image URL, or repo asset path.
               </p>
               <div class="media-input-row">
                 <div class="media-live-thumb media-live-thumb--wide" id="preview-thumb-cover" title="Cover banner preview"></div>
@@ -1315,22 +1352,22 @@
                   class="media-text-input"
                   placeholder="https://drive.google.com/file/d/... or /assets/cover-banner.jpg"
                 />
-                <label class="media-file-upload-label">
-                  <span>Upload Image</span>
-                  <input
-                    type="file"
-                    id="upload-cover-file"
-                    accept="image/*"
-                    class="media-file-input-hidden"
-                  />
-                </label>
+                <button
+                  type="button"
+                  class="media-small-btn media-preview-btn"
+                  data-preview-target="input-cover-url"
+                  data-preview-type="image"
+                  data-preview-label="Cover Banner Photo"
+                >
+                  Preview Link
+                </button>
               </div>
             </div>
 
             <div class="media-field-section" id="admin-section-profile">
-              <h3 class="media-field-heading">3. Circular Profile Photograph (Link-Based or Upload)</h3>
+              <h3 class="media-field-heading">3. Circular Profile Photograph (Link-Based Image)</h3>
               <p class="media-field-hint">
-                Supports Google Drive image link, HTTPS image URL, local asset path, or direct portrait upload.
+                Paste a Google Drive share link, direct HTTPS image URL, or repo asset path.
               </p>
               <div class="media-input-row">
                 <div class="media-live-thumb media-live-thumb--circle" id="preview-thumb-profile" title="Profile photo preview"></div>
@@ -1340,15 +1377,15 @@
                   class="media-text-input"
                   placeholder="https://drive.google.com/file/d/... or /assets/aistudio/Untitled_9d626b95.png"
                 />
-                <label class="media-file-upload-label">
-                  <span>Upload Photo</span>
-                  <input
-                    type="file"
-                    id="upload-profile-file"
-                    accept="image/*"
-                    class="media-file-input-hidden"
-                  />
-                </label>
+                <button
+                  type="button"
+                  class="media-small-btn media-preview-btn"
+                  data-preview-target="input-profile-url"
+                  data-preview-type="image"
+                  data-preview-label="Circular Profile Photograph"
+                >
+                  Preview Link
+                </button>
               </div>
             </div>
 
@@ -1366,15 +1403,15 @@
                   class="media-text-input"
                   placeholder="South Eastern University of Sri Lanka (SEU) logo image link"
                 />
-                <label class="media-file-upload-label">
-                  <span>Upload Logo</span>
-                  <input
-                    type="file"
-                    id="upload-logo-seu-file"
-                    accept="image/*"
-                    class="media-file-input-hidden"
-                  />
-                </label>
+                <button
+                  type="button"
+                  class="media-small-btn media-preview-btn"
+                  data-preview-target="input-logo-seu-url"
+                  data-preview-type="image"
+                  data-preview-label="South Eastern University of Sri Lanka (SEU) Logo"
+                >
+                  Preview Link
+                </button>
               </div>
 
               <div class="media-input-row">
@@ -1385,15 +1422,15 @@
                   class="media-text-input"
                   placeholder="AAT Sri Lanka · Zip Campus (AAT) logo image link"
                 />
-                <label class="media-file-upload-label">
-                  <span>Upload Logo</span>
-                  <input
-                    type="file"
-                    id="upload-logo-aat-file"
-                    accept="image/*"
-                    class="media-file-input-hidden"
-                  />
-                </label>
+                <button
+                  type="button"
+                  class="media-small-btn media-preview-btn"
+                  data-preview-target="input-logo-aat-url"
+                  data-preview-type="image"
+                  data-preview-label="AAT Sri Lanka Logo"
+                >
+                  Preview Link
+                </button>
               </div>
 
               <div class="media-input-row">
@@ -1404,15 +1441,15 @@
                   class="media-text-input"
                   placeholder="Jay Jay Mills Lanka (Pvt) Ltd (JJM) logo image link"
                 />
-                <label class="media-file-upload-label">
-                  <span>Upload Logo</span>
-                  <input
-                    type="file"
-                    id="upload-logo-jjm-file"
-                    accept="image/*"
-                    class="media-file-input-hidden"
-                  />
-                </label>
+                <button
+                  type="button"
+                  class="media-small-btn media-preview-btn"
+                  data-preview-target="input-logo-jjm-url"
+                  data-preview-type="image"
+                  data-preview-label="Jay Jay Mills Lanka (Pvt) Ltd Logo"
+                >
+                  Preview Link
+                </button>
               </div>
 
               <div class="media-input-row">
@@ -1423,22 +1460,22 @@
                   class="media-text-input"
                   placeholder="Grace Construction (GC) logo image link"
                 />
-                <label class="media-file-upload-label">
-                  <span>Upload Logo</span>
-                  <input
-                    type="file"
-                    id="upload-logo-gc-file"
-                    accept="image/*"
-                    class="media-file-input-hidden"
-                  />
-                </label>
+                <button
+                  type="button"
+                  class="media-small-btn media-preview-btn"
+                  data-preview-target="input-logo-gc-url"
+                  data-preview-type="image"
+                  data-preview-label="Grace Construction Logo"
+                >
+                  Preview Link
+                </button>
               </div>
             </div>
 
             <div class="media-field-section" id="admin-section-projects">
-              <h3 class="media-field-heading">5. Academic &amp; Technical Project Screenshots</h3>
+              <h3 class="media-field-heading">5. Academic &amp; Technical Project Screenshots (Link-Based Image)</h3>
               <p class="media-field-hint">
-                Leave empty to keep the clean architectural preview card, or provide a link / upload a screenshot.
+                Leave empty to keep the architectural preview card, or paste a Google Drive / HTTPS screenshot link.
               </p>
               <div class="media-input-row">
                 <div class="media-live-thumb media-live-thumb--wide" id="preview-thumb-proj-school" title="School Management System screenshot preview"></div>
@@ -1448,15 +1485,15 @@
                   class="media-text-input"
                   placeholder="School Management System (C# & SQL Server) screenshot link"
                 />
-                <label class="media-file-upload-label">
-                  <span>Upload Image</span>
-                  <input
-                    type="file"
-                    id="upload-proj-school-file"
-                    accept="image/*"
-                    class="media-file-input-hidden"
-                  />
-                </label>
+                <button
+                  type="button"
+                  class="media-small-btn media-preview-btn"
+                  data-preview-target="input-proj-school-url"
+                  data-preview-type="image"
+                  data-preview-label="School Management System Screenshot"
+                >
+                  Preview Link
+                </button>
               </div>
               <div class="media-input-row">
                 <div class="media-live-thumb media-live-thumb--wide" id="preview-thumb-proj-home" title="Home Repair & Renovation Website screenshot preview"></div>
@@ -1466,24 +1503,24 @@
                   class="media-text-input"
                   placeholder="Home Repair & Renovation Website screenshot link"
                 />
-                <label class="media-file-upload-label">
-                  <span>Upload Image</span>
-                  <input
-                    type="file"
-                    id="upload-proj-home-file"
-                    accept="image/*"
-                    class="media-file-input-hidden"
-                  />
-                </label>
+                <button
+                  type="button"
+                  class="media-small-btn media-preview-btn"
+                  data-preview-target="input-proj-home-url"
+                  data-preview-type="image"
+                  data-preview-label="Home Repair & Renovation Website Screenshot"
+                >
+                  Preview Link
+                </button>
               </div>
             </div>
 
             <div class="media-field-section" id="admin-section-certificates">
               <div class="cv-entry-header">
                 <div>
-                  <h3 class="media-field-heading">6. Certificates &amp; Credential Documents</h3>
+                  <h3 class="media-field-heading">6. Certificates &amp; Credential Documents (Link-Based)</h3>
                   <p class="media-field-hint">
-                    Add certificate images and PDF/verification links (entries with an empty title stay hidden).
+                    Add certificate image links and PDF/verification links (entries with an empty title stay hidden).
                   </p>
                 </div>
                 <button type="button" id="add-cert-row-btn" class="media-small-btn">
@@ -1492,6 +1529,42 @@
               </div>
               <div id="cert-editor-list" class="media-cert-list"></div>
             </div>
+
+            <!-- 7. LIVE EDITABLE JSON CONFIGURATION (portfolio-links.json) -->
+            <div class="media-field-section" id="admin-section-json">
+              <div class="cv-entry-header">
+                <div>
+                  <h3 class="media-field-heading">7. Editable JSON Configuration (<code>portfolio-links.json</code>)</h3>
+                  <p class="media-field-hint">
+                    Every link entered above is automatically saved in this JSON object. When updating links later, you can edit the fields above, paste updated JSON directly below, or import your <code>portfolio-links.json</code> file.
+                  </p>
+                </div>
+                <div class="media-json-top-actions">
+                  <label class="media-file-upload-label" title="Load an existing portfolio-links.json file">
+                    <span>Import JSON File</span>
+                    <input
+                      type="file"
+                      id="import-json-file-input"
+                      accept=".json,application/json"
+                      class="media-file-input-hidden"
+                    />
+                  </label>
+                  <button type="button" id="apply-json-to-fields-btn" class="media-small-btn">
+                    Load Edited JSON into Fields
+                  </button>
+                </div>
+              </div>
+              <textarea
+                id="admin-json-textarea"
+                class="media-json-textarea"
+                rows="12"
+                spellcheck="false"
+                aria-label="Editable portfolio-links.json content"
+              ></textarea>
+              <p class="media-field-hint" id="admin-json-status-msg">
+                Tip: After editing links, click <strong>Save &amp; Download JSON</strong> (or <strong>Copy JSON</strong>) and commit <code>portfolio-links.json</code> to your repository so Vercel serves the exact same links on every mobile phone and desktop browser.
+              </p>
+            </div>
           </div>
 
           <div class="media-modal-footer">
@@ -1499,11 +1572,14 @@
               Reset to Default
             </button>
             <div class="media-modal-footer-right">
+              <button type="button" id="copy-json-btn" class="media-small-btn">
+                Copy JSON
+              </button>
               <button type="button" id="export-images-js-btn" class="cv-print-btn">
                 Download images.js
               </button>
               <button type="button" id="save-media-links-btn" class="cv-download-btn">
-                Save &amp; Apply
+                Save &amp; Download JSON
               </button>
             </div>
           </div>
